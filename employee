@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bar918 — Staff bookings</title>
+<style>
+  :root{--blue:#012C4E;--gold:#EAD292;--mahogany:#4E2A1E}
+  body{font-family:Inter,Arial;margin:16px;background:#fafafa}
+  .wrap{max-width:1100px;margin:0 auto;background:#fff;padding:16px;border-radius:10px}
+  .top{display:flex;gap:12px;align-items:center;justify-content:space-between}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+  .btn{padding:6px 10px;border-radius:6px;border:0;cursor:pointer}
+  .btn-seated{background:#f6c244}
+  .btn-finished{background:#6fcf97}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h2 style="color:var(--blue)">Bar918 — Staff</h2>
+      <div>
+        <label>Bookings enabled</label>
+        <input type="checkbox" id="toggleBookings" />
+      </div>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+      <button id="prevDate">← Prev</button>
+      <input type="date" id="staffDate" />
+      <button id="nextDate">Next →</button>
+      <button id="refreshBtn" style="margin-left:auto">Refresh</button>
+    </div>
+
+    <table>
+      <thead><tr><th>Time</th><th>Table</th><th>Name</th><th>Party</th><th>Notes</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="bookingsBody"></tbody>
+    </table>
+  </div>
+
+<script>
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwgsiDNMO1l9Zan3RJ_RDMLV5WICetR3D1w5JEOv4qTU-V9DS9m1etIkr_hRQP-0syL/exec';
+const staffDate = document.getElementById('staffDate');
+const bookingsBody = document.getElementById('bookingsBody');
+const toggleBookings = document.getElementById('toggleBookings');
+
+staffDate.value = new Date().toISOString().slice(0,10);
+
+async function fetchData(){ try{ const r = await fetch(WEBHOOK_URL); return await r.json(); }catch(e){ console.warn(e); return {bookings:[], closedDates:[], settings:{bookingsEnabled:true}}; } }
+
+async function refresh(){
+  const data = await fetchData();
+  const bookings = (data.bookings||[]).filter(b=>b.date === staffDate.value).sort((a,b)=>a.time.localeCompare(b.time));
+  toggleBookings.checked = !!(data.settings && data.settings.bookingsEnabled);
+  bookingsBody.innerHTML = '';
+  if(bookings.length===0){ bookingsBody.innerHTML = '<tr><td colspan="7">No bookings</td></tr>'; return; }
+  bookings.forEach(b=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${b.time}</td><td>${b.table}</td><td>${b.name}</td><td>${b.party}</td><td>${b.requests||''}</td><td>${b.status}</td><td>
+      <button class="btn btn-seated" data-id="${b.id}">Seated</button> <button class="btn btn-finished" data-id="${b.id}">Finished</button></td>`;
+    bookingsBody.appendChild(tr);
+  });
+  // attach actions
+  bookingsBody.querySelectorAll('.btn-seated').forEach(btn=>btn.addEventListener('click', ()=>updateStatus(btn.dataset.id,'Seated')));
+  bookingsBody.querySelectorAll('.btn-finished').forEach(btn=>btn.addEventListener('click', ()=>updateStatus(btn.dataset.id,'Finished')));
+}
+
+async function updateStatus(id, status){
+  try{
+    const res = await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'updateStatus', id, status })});
+    const j = await res.json();
+    if(j.status==='ok') refresh();
+    else alert('Update failed: '+(j.message||'unknown'));
+  }catch(e){ console.warn(e); alert('Network error'); }
+}
+
+document.getElementById('prevDate').addEventListener('click', ()=>{ const d=new Date(staffDate.value); d.setDate(d.getDate()-1); staffDate.value = d.toISOString().slice(0,10); refresh(); });
+document.getElementById('nextDate').addEventListener('click', ()=>{ const d=new Date(staffDate.value); d.setDate(d.getDate()+1); staffDate.value = d.toISOString().slice(0,10); refresh(); });
+document.getElementById('refreshBtn').addEventListener('click', refresh);
+toggleBookings.addEventListener('change', async ()=> {
+  try{
+    const res = await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'toggleBookings', enabled: toggleBookings.checked })});
+    const j = await res.json(); if(j.status!=='ok') alert('failed');
+  }catch(e){ console.warn(e); alert('Network error'); }
+});
+
+refresh();
+</script>
+</body>
+</html>
