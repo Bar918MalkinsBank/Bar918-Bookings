@@ -1,357 +1,225 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Bar918 — Book a table</title>
-
 <style>
-  :root{
-    --blue:#012C4E;
-    --gold:#EAD292;
-    --mahogany:#4E2A1E;
-    --muted:#f3f4f6;
-    --card:#ffffff;
-    --text:#111;
-    --disabled:#cfcfcf;
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #fff;
+    color: #012C4E;
+    text-align: center;
+    padding: 20px;
   }
-  body{font-family:Inter,system-ui,Arial,Helvetica,sans-serif;margin:0;background:#fafafa;color:var(--text);padding:18px}
-  .wrap{max-width:1000px;margin:0 auto;background:var(--card);padding:20px;border-radius:10px;box-shadow:0 6px 20px rgba(2,10,20,0.06)}
-  h1{color:var(--blue);margin:0 0 6px;font-size:22px}
-  p.sub{margin:0;color:#666}
-  .controls{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
-  .col{flex:1;min-width:180px}
-  label{display:block;font-size:13px;color:#333;margin-bottom:6px}
-  input[type="date"], select, input[type="time"], input[type="text"], input[type="email"], textarea {width:100%;padding:10px;border-radius:8px;border:1px solid #ddd}
-  textarea{min-height:80px}
-  .layout{display:grid;grid-template-columns:1fr 44px 1fr;gap:12px;margin-top:18px;align-items:start}
-  .left-grid, .right-grid{background:var(--muted);padding:12px;border-radius:8px;min-height:260px}
-  .divider{width:44px;display:flex;align-items:center;justify-content:center}
-  .mahogany{width:8px;background:var(--mahogany);border-radius:6px;height:100%}
-  .grid-inner{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .table-card{background:var(--blue);color:var(--gold);padding:12px;border-radius:10px;text-align:center;cursor:pointer;border:3px solid rgba(0,0,0,0);transition:transform .12s, box-shadow .12s}
-  .table-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(1,44,78,0.08)}
-  .table-card .label{font-weight:700;font-size:1rem}
-  .table-card .seats{font-size:0.9rem;color:var(--gold);opacity:0.95;margin-top:6px}
-  .table-card.booked{background:var(--disabled);color:#666;cursor:not-allowed;transform:none;box-shadow:none}
-  .table-card.selected{outline:4px solid var(--gold);box-shadow:0 12px 30px rgba(234,210,146,0.12)}
-  .snugs{display:flex;gap:10px;justify-content:flex-start;margin-top:12px}
-  .snug{flex:0 0 120px}
-  .actions{display:flex;gap:10px;align-items:center;margin-top:14px}
-  .submit{background:var(--blue);color:var(--gold);padding:12px 16px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
-  .msg{margin-top:10px;font-size:14px;color:var(--blue)}
-  .legend{display:flex;gap:12px;align-items:center;margin-top:16px}
-  .legend .item{display:flex;align-items:center;gap:8px}
-  .legend .swatch{width:18px;height:14px;border-radius:4px;display:inline-block}
-  @media(max-width:860px){ .layout{grid-template-columns:1fr; } .divider{display:none} .snugs{justify-content:center} .grid-inner{grid-template-columns:repeat(2,1fr)} }
+
+  h2 {
+    color: #012C4E;
+    margin-bottom: 20px;
+  }
+
+  .table-grid {
+    display: flex;
+    justify-content: space-between;
+    max-width: 800px;
+    margin: 0 auto 30px;
+  }
+
+  .table-section {
+    display: grid;
+    gap: 10px;
+  }
+
+  .left-section {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .right-section {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .snug-section {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .divider {
+    width: 6px;
+    background-color: #4B1E0E;
+    border-radius: 3px;
+  }
+
+  .table {
+    background-color: #EAD292;
+    color: #012C4E;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .table.small { width: 80px; height: 40px; font-size: 0.8rem; }
+  .table.medium { width: 100px; height: 60px; font-size: 1rem; }
+  .table.large { width: 120px; height: 80px; font-size: 1.1rem; }
+
+  .table.booked {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  form {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 10px;
+    border: 1px solid #012C4E;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  button {
+    background-color: #012C4E;
+    color: #EAD292;
+    font-weight: bold;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #EAD292;
+    color: #012C4E;
+  }
 </style>
 
-</head>
-<body>
-  <div class="wrap">
-    <h1>Book a table — Bar918</h1>
-    <p class="sub">Open 10:00–20:00 Mon–Sat, 10:00–18:00 Sun</p>
+<h2>Book Your Table</h2>
 
-    <!-- CONTROLS -->
-    <div class="controls" id="controls">
-      <div class="col">
-        <label for="date">Date</label>
-        <input type="date" id="date" />
-      </div>
-      <div class="col">
-        <label for="time">Time</label>
-        <select id="time"></select>
-      </div>
-      <div class="col">
-        <label>Party size</label>
-        <select id="party"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select>
-      </div>
-    </div>
+<div class="table-grid">
+  <div class="table-section left-section" id="left-section"></div>
+  <div class="divider"></div>
+  <div class="table-section right-section" id="right-section"></div>
+</div>
 
-    <!-- LAYOUT (Left / Divider / Right) -->
-    <div class="layout" style="margin-top:18px">
-      <div class="left-grid">
-        <div style="font-weight:700;margin-bottom:8px">Left side</div>
-        <div class="grid-inner" id="leftGrid">
-          <!-- Left tables 7-15 -->
-        </div>
+<div class="snug-section" id="snug-section"></div>
 
-        <!-- snugs below left -->
-        <div class="snugs" id="snugsRow" style="margin-top:14px">
-          <!-- S1 S2 S3 -->
-        </div>
-      </div>
-
-      <div class="divider">
-        <div class="mahogany" style="height:100%"></div>
-      </div>
-
-      <div class="right-grid">
-        <div style="font-weight:700;margin-bottom:8px">Right side</div>
-        <div class="grid-inner" id="rightGrid">
-          <!-- Right tables 1-6 -->
-        </div>
-      </div>
-    </div>
-
-    <!-- CONTACT & submit -->
-    <div class="controls" style="margin-top:18px">
-      <div class="col">
-        <label for="name">Name</label>
-        <input id="name" type="text" placeholder="Your name" />
-      </div>
-      <div class="col">
-        <label for="phone">Phone</label>
-        <input id="phone" type="text" placeholder="Phone number" />
-      </div>
-      <div class="col">
-        <label for="email">Email</label>
-        <input id="email" type="email" placeholder="you@example.com" />
-      </div>
-    </div>
-
-    <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">
-      <div style="flex:1;min-width:240px">
-        <label for="baby">Baby seat?</label>
-        <select id="baby"><option value="no">No</option><option value="yes">Yes</option></select>
-      </div>
-      <div style="flex:2;min-width:280px">
-        <label for="requests">Special requests</label>
-        <textarea id="requests" placeholder="E.g. birthday, allergies..."></textarea>
-      </div>
-      <div style="display:flex;align-items:flex-end">
-        <button id="submitBtn" class="submit">Request booking</button>
-      </div>
-    </div>
-
-    <div class="msg" id="msg"></div>
-
-    <div class="legend">
-      <div class="item"><span class="swatch" style="background:var(--blue)"></span> Available</div>
-      <div class="item"><span class="swatch" style="background:var(--gold)"></span> Selected</div>
-      <div class="item"><span class="swatch" style="background:var(--disabled)"></span> Booked</div>
-    </div>
-  </div>
-
-<!-- EmailJS -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<form id="bookingForm">
+  <input type="hidden" id="tableNumber" name="tableNumber" required>
+  <label>Name:</label>
+  <input type="text" id="name" required>
+  <label>Phone:</label>
+  <input type="text" id="phone" required>
+  <label>Email:</label>
+  <input type="email" id="email" required>
+  <label>Booking Time:</label>
+  <input type="datetime-local" id="time" required>
+  <label>Baby Seat:</label>
+  <select id="babySeat">
+    <option value="No">No</option>
+    <option value="Yes">Yes</option>
+  </select>
+  <label>Special Requests:</label>
+  <textarea id="requests" rows="3"></textarea>
+  <button type="submit">Book Now</button>
+</form>
 
 <script>
-/* ========== CONFIG - edit these ========== */
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
-const EMAILJS_SERVICE = 'Service_Reservations';
-const EMAILJS_TEMPLATE = 'table_template';
-const EMAILJS_PUBLIC_KEY = 'aypCqsVVHRqzqReCk';
-const API_KEY = 'BetchtonRoad918'; // change to match EXPECTED_API_KEY in Apps Script
-/* ========================================= */
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzNxPUHl-eQgnZj5hXDBOEi8BXAZFiUBfNxolzKZGHUKPr2ilWAvZI05UHJuwf9MiOS/exec';
 
-emailjs.init(EMAILJS_PUBLIC_KEY);
+// Table layout configuration
+const tables = {
+  left: [
+    { number: 7, seats: 6 }, { number: 8, seats: 4 }, { number: 9, seats: 4 },
+    { number: 10, seats: 4 }, { number: 11, seats: 4 }, { number: 12, seats: 4 },
+    { number: 13, seats: 4 }, { number: 14, seats: 6 }, { number: 15, seats: 4 }
+  ],
+  right: [
+    { number: 1, seats: 4 }, { number: 2, seats: 6 }, { number: 3, seats: 4 },
+    { number: 4, seats: 4 }, { number: 5, seats: 4 }, { number: 6, seats: 6 }
+  ],
+  snug: [
+    { number: 'S1', seats: 2 }, { number: 'S2', seats: 2 }, { number: 'S3', seats: 2 }
+  ]
+};
 
-/* Table definitions & layout assignment */
-const TABLES = [
-  { id: '7', label: 'Table 7', seats: 6, side: 'left'},
-  { id: '8', label: 'Table 8', seats: 4, side: 'left'},
-  { id: '9', label: 'Table 9', seats: 4, side: 'left'},
-  { id: '10', label: 'Table 10', seats: 4, side: 'left'},
-  { id: '11', label: 'Table 11', seats: 4, side: 'left'},
-  { id: '12', label: 'Table 12', seats: 4, side: 'left'},
-  { id: '13', label: 'Table 13', seats: 4, side: 'left'},
-  { id: '14', label: 'Table 14', seats: 6, side: 'left'},
-  { id: '15', label: 'Table 15', seats: 4, side: 'left'},
+let selectedTable = null;
 
-  { id: '1', label: 'Table 1', seats: 4, side: 'right'},
-  { id: '2', label: 'Table 2', seats: 6, side: 'right'},
-  { id: '3', label: 'Table 3', seats: 4, side: 'right'},
-  { id: '4', label: 'Table 4', seats: 4, side: 'right'},
-  { id: '5', label: 'Table 5', seats: 4, side: 'right'},
-  { id: '6', label: 'Table 6', seats: 6, side: 'right'},
-
-  { id: 'S1', label: 'Snug 1', seats: 2, side: 'snug'},
-  { id: 'S2', label: 'Snug 2', seats: 2, side: 'snug'},
-  { id: 'S3', label: 'Snug 3', seats: 2, side: 'snug'}
-];
-
-const leftGrid = document.getElementById('leftGrid');
-const rightGrid = document.getElementById('rightGrid');
-const snugsRow = document.getElementById('snugsRow');
-
-const dateEl = document.getElementById('date');
-const timeEl = document.getElementById('time');
-const partyEl = document.getElementById('party');
-const msgEl = document.getElementById('msg');
-const submitBtn = document.getElementById('submitBtn');
-
-dateEl.min = new Date().toISOString().slice(0,10);
-dateEl.value = dateEl.min;
-
-/* build UI cards */
-function buildLayout(){
-  leftGrid.innerHTML = '';
-  rightGrid.innerHTML = '';
-  snugsRow.innerHTML = '';
-
-  TABLES.forEach(t=>{
-    const card = document.createElement('div');
-    card.className = 'table-card';
-    card.dataset.id = t.id;
-    card.dataset.seats = t.seats;
-    card.innerHTML = `<div class="label">${t.label}</div><div class="seats">Seats ${t.seats}</div>`;
-    card.addEventListener('click', ()=>selectTable(card));
-    if(t.side === 'left') leftGrid.appendChild(card);
-    else if(t.side === 'right') rightGrid.appendChild(card);
-    else if(t.side === 'snug'){ 
-      const sn = card.cloneNode(true);
-      sn.classList.add('snug');
-      snugsRow.appendChild(sn);
-      sn.addEventListener('click', ()=>selectTable(sn));
-    }
-  });
-}
-buildLayout();
-
-let selectedTableId = null;
-function selectTable(card){
-  if(card.classList.contains('booked')) return;
-  document.querySelectorAll('.table-card.selected').forEach(c=>c.classList.remove('selected'));
-  card.classList.add('selected');
-  selectedTableId = card.dataset.id;
-}
-
-/* time slots */
-function pad(n){return n<10?'0'+n:''+n;}
-function genSlots(dateStr){
-  const d = new Date(dateStr+'T00:00:00'); if(isNaN(d)) return [];
-  const day = d.getDay(), open=10, close=(day===0?18:20);
-  const slots=[];
-  for(let h=open; h<close; h++){ slots.push(pad(h)+':00'); slots.push(pad(h)+':30'); }
-  return slots;
-}
-function populateTimes(){ timeEl.innerHTML=''; genSlots(dateEl.value).forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;timeEl.appendChild(o);});}
-populateTimes();
-dateEl.addEventListener('change', ()=>{ populateTimes(); refreshAvailability(); });
-
-/* fetch server data */
-async function fetchServerData(){
-  try{
-    const r = await fetch(WEBHOOK_URL);
-    if(!r.ok) throw new Error('fetch failed');
-    return await r.json();
-  }catch(e){
-    console.warn('fetchServerData error', e);
-    return {bookings:[], closedDates:[], settings:{bookingsEnabled:true}};
-  }
-}
-
-/* refresh availability: mark booked tables */
-async function refreshAvailability(){
-  const data = await fetchServerData();
-  const bookings = data.bookings || [];
-  const closedDates = data.closedDates || [];
-  const settings = data.settings || { bookingsEnabled:true };
-
-  // reset all
-  document.querySelectorAll('.table-card').forEach(card=>{
-    card.classList.remove('booked','selected');
-    card.style.pointerEvents = 'auto';
-    card.style.opacity = '1';
-  });
-  selectedTableId = null;
-
-  // disable all if disabled or closed
-  if(!settings.bookingsEnabled || (closedDates || []).includes(dateEl.value)){
-    document.querySelectorAll('.table-card').forEach(card=>{
-      card.classList.add('booked'); card.style.pointerEvents='none'; card.style.opacity='0.6';
+function createTables() {
+  ['left', 'right'].forEach(side => {
+    const section = document.getElementById(`${side}-section`);
+    tables[side].forEach(t => {
+      const btn = document.createElement('button');
+      btn.className = `table ${t.seats === 6 ? 'large' : 'medium'}`;
+      btn.innerHTML = `Table ${t.number}<br><small>${t.seats} seats</small>`;
+      btn.onclick = () => selectTable(t.number, btn);
+      section.appendChild(btn);
     });
-    msgEl.textContent = 'Bookings disabled for this date.';
-    return;
-  }
-
-  const selMs = new Date(dateEl.value+'T'+timeEl.value+':00').getTime();
-  bookings.forEach(b=>{
-    if(b.status === 'Finished') return;
-    if(b.date !== dateEl.value) return;
-    const otherMs = new Date(b.date+'T'+b.time+':00').getTime();
-    const diff = Math.abs(otherMs - selMs)/60000;
-    if(diff < 90){
-      const c = Array.from(document.querySelectorAll('.table-card')).find(x=>x.dataset.id === b.table);
-      if(c){ c.classList.add('booked'); c.style.pointerEvents='none'; c.style.opacity='0.6'; }
-    }
   });
-  msgEl.textContent = '';
+
+  const snug = document.getElementById('snug-section');
+  tables.snug.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'table small';
+    btn.innerHTML = `Snug ${t.number}<br><small>${t.seats} seats</small>`;
+    btn.onclick = () => selectTable(t.number, btn);
+    snug.appendChild(btn);
+  });
 }
 
-/* initial refresh */
-setTimeout(refreshAvailability, 300);
-timeEl.addEventListener('change', refreshAvailability);
+function selectTable(number, btn) {
+  if (btn.classList.contains('booked')) return;
+  document.querySelectorAll('.table').forEach(t => t.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('tableNumber').value = number;
+  selectedTable = number;
+}
 
-/* submit booking */
-submitBtn.addEventListener('click', async (ev)=>{
-  ev.preventDefault();
-  msgEl.textContent = '';
+createTables();
 
-  if(!selectedTableId){ msgEl.textContent = 'Please select a table.'; return; }
-  const booking = {
-    id: 'bk_'+Date.now(),
-    date: dateEl.value,
-    time: timeEl.value,
-    table: selectedTableId,
-    party: partyEl.value,
-    baby: document.getElementById('baby').value,
-    requests: document.getElementById('requests').value,
-    name: document.getElementById('name').value.trim(),
-    phone: document.getElementById('phone').value.trim(),
-    email: document.getElementById('email').value.trim()
+document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const data = {
+    name: document.getElementById('name').value,
+    phone: document.getElementById('phone').value,
+    email: document.getElementById('email').value,
+    time: document.getElementById('time').value,
+    table: document.getElementById('tableNumber').value,
+    babySeat: document.getElementById('babySeat').value,
+    specialRequests: document.getElementById('requests').value
   };
 
-  if(!booking.name || !booking.phone || !booking.email){ msgEl.textContent = 'Please provide name, phone and email.'; return; }
-  const seats = parseInt(document.querySelector(`.table-card[data-id="${booking.table}"]`).dataset.seats,10);
-  if(parseInt(booking.party,10) > seats){ msgEl.textContent = `Selected table seats ${seats}.`; return; }
-
-  // POST to webhook (with API key)
-  try{
-    const res = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'create', apiKey: API_KEY, booking })
-    });
-    const json = await res.json();
-    if(json.status === 'conflict' || json.status === 'closed'){ msgEl.textContent = json.message || 'Cannot book this slot.'; return; }
-    if(json.status !== 'ok'){ msgEl.textContent = 'Server error — please call to confirm'; console.warn(json); return; }
-  }catch(err){
-    console.error('Webhook POST failed', err);
-    msgEl.textContent = 'Network error while saving booking. Please call to confirm.';
+  if (!data.table) {
+    alert('Please select a table before submitting.');
     return;
   }
 
-  // EmailJS confirmation (best-effort)
-  try{
-    await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
-      name: booking.name,
-      email: booking.email,
-      phone: booking.phone,
-      date: booking.date,
-      time: booking.time,
-      table: booking.table,
-      seats: String(seats),
-      baby_seat: booking.baby,
-      special_request: booking.requests
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
     });
-  }catch(e){ console.warn('EmailJS send failed', e); }
 
-  msgEl.textContent = '✅ Booking requested — a confirmation email has been sent.';
-  // clear inputs and refresh UI
-  document.getElementById('name').value = '';
-  document.getElementById('phone').value = '';
-  document.getElementById('email').value = '';
-  document.getElementById('requests').value = '';
-  document.querySelectorAll('.table-card.selected').forEach(c=>c.classList.remove('selected'));
-  selectedTableId = null;
-  setTimeout(()=>{ populateTimes(); refreshAvailability(); }, 700);
+    const text = await res.text();
+    const json = JSON.parse(text);
+
+    if (json.status === 'ok') {
+      alert('Booking confirmed!');
+      document.getElementById('bookingForm').reset();
+      document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+    } else {
+      alert('Booking failed: ' + (json.message || 'Unknown error'));
+    }
+  } catch (err) {
+    console.error('Error submitting booking:', err);
+    alert('Error submitting booking. Please try again later.');
+  }
 });
 </script>
-</body>
-</html>
-
-
-
-
