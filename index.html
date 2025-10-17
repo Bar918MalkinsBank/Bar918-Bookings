@@ -10,6 +10,7 @@
   h2 {
     color: #012C4E;
     margin-bottom: 20px;
+    font-weight: 700;
   }
 
   .table-grid {
@@ -17,11 +18,13 @@
     justify-content: space-between;
     max-width: 800px;
     margin: 0 auto 30px;
+    gap: 20px;
   }
 
   .table-section {
     display: grid;
     gap: 10px;
+    justify-items: center;
   }
 
   .left-section {
@@ -50,27 +53,45 @@
     color: #012C4E;
     font-weight: bold;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   }
 
   .table.small { width: 80px; height: 40px; font-size: 0.8rem; }
   .table.medium { width: 100px; height: 60px; font-size: 1rem; }
   .table.large { width: 120px; height: 80px; font-size: 1.1rem; }
 
+  .table:hover {
+    transform: scale(1.05);
+    background-color: #d8b86c;
+  }
+
+  .table.selected {
+    outline: 3px solid #012C4E;
+    transform: scale(1.08);
+    background-color: #EAD292;
+  }
+
   .table.booked {
     background-color: #ccc;
     cursor: not-allowed;
+    opacity: 0.7;
   }
 
   form {
     max-width: 600px;
     margin: 0 auto;
+    text-align: left;
+  }
+
+  label {
+    font-weight: 600;
   }
 
   input, select, textarea {
@@ -91,6 +112,7 @@
     border-radius: 10px;
     cursor: pointer;
     transition: 0.3s ease;
+    width: 100%;
   }
 
   button:hover {
@@ -132,7 +154,6 @@
 <script>
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
 
-// Table layout configuration
 const tables = {
   left: [
     { number: 7, seats: 6 }, { number: 8, seats: 4 }, { number: 9, seats: 4 },
@@ -156,8 +177,9 @@ function createTables() {
     tables[side].forEach(t => {
       const btn = document.createElement('button');
       btn.className = `table ${t.seats === 6 ? 'large' : 'medium'}`;
+      btn.id = `table-${t.number}`;
       btn.innerHTML = `Table ${t.number}<br><small>${t.seats} seats</small>`;
-      btn.onclick = () => selectTable(t.number, btn);
+      btn.onclick = (ev) => { ev.preventDefault(); selectTable(t.number, btn); };
       section.appendChild(btn);
     });
   });
@@ -166,8 +188,9 @@ function createTables() {
   tables.snug.forEach(t => {
     const btn = document.createElement('button');
     btn.className = 'table small';
-    btn.innerHTML = `Snug ${t.number}<br><small>${t.seats} seats</small>`;
-    btn.onclick = () => selectTable(t.number, btn);
+    btn.id = `table-${t.number}`;
+    btn.innerHTML = `${t.number}<br><small>${t.seats} seats</small>`;
+    btn.onclick = (ev) => { ev.preventDefault(); selectTable(t.number, btn); };
     snug.appendChild(btn);
   });
 }
@@ -180,25 +203,37 @@ function selectTable(number, btn) {
   selectedTable = number;
 }
 
-createTables();
+// ---- Fetch availability ----
+async function refreshAvailability() {
+  try {
+    const res = await fetch(WEBHOOK_URL + '?action=get');
+    const txt = await res.text();
+    const data = JSON.parse(txt);
 
+    document.querySelectorAll('.table').forEach(t => t.classList.remove('booked'));
+    data.bookedTables.forEach(num => {
+      const el = document.getElementById(`table-${num}`);
+      if (el) el.classList.add('booked');
+    });
+  } catch (err) {
+    console.error('Error fetching availability:', err);
+  }
+}
+
+// ---- Submit form ----
 document.getElementById('bookingForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (!selectedTable) return alert('Please select a table.');
 
   const data = {
     name: document.getElementById('name').value,
     phone: document.getElementById('phone').value,
     email: document.getElementById('email').value,
     time: document.getElementById('time').value,
-    table: document.getElementById('tableNumber').value,
+    table: selectedTable,
     babySeat: document.getElementById('babySeat').value,
     specialRequests: document.getElementById('requests').value
   };
-
-  if (!data.table) {
-    alert('Please select a table before submitting.');
-    return;
-  }
 
   try {
     const res = await fetch(WEBHOOK_URL, {
@@ -206,14 +241,15 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(data)
     });
-
     const text = await res.text();
     const json = JSON.parse(text);
 
     if (json.status === 'ok') {
-      alert('Booking confirmed!');
+      alert('✅ Booking confirmed!');
       document.getElementById('bookingForm').reset();
       document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+      selectedTable = null;
+      refreshAvailability();
     } else {
       alert('Booking failed: ' + (json.message || 'Unknown error'));
     }
@@ -222,5 +258,7 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
     alert('Error submitting booking. Please try again later.');
   }
 });
-</script>
 
+createTables();
+refreshAvailability();
+</script>
