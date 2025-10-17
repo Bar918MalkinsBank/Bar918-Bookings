@@ -158,8 +158,14 @@
   <button type="submit">Book Now</button>
 </form>
 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec'; // e.g. https://script.google.com/macros/s/AKfycbx.../exec
+emailjs.init('aypCqsVVHRqzqReCk'); // <-- your public key
+
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
+
+const SERVICE_ID = 'Service_Reservations';
+const TEMPLATE_ID = 'Table_Template';
 
 const tables = {
   left: [
@@ -215,7 +221,6 @@ async function refreshAvailability() {
     const res = await fetch(WEBHOOK_URL + '?action=get');
     const txt = await res.text();
     const data = JSON.parse(txt);
-
     document.querySelectorAll('.table').forEach(t => t.classList.remove('booked'));
     data.bookedTables.forEach(num => {
       const el = document.getElementById(`table-${num}`);
@@ -246,11 +251,26 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(data)
     });
+
     const text = await res.text();
     const json = JSON.parse(text);
 
     if (json.status === 'ok') {
-      alert('✅ Booking confirmed!');
+      // Send EmailJS confirmation
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+        to_email: data.email,
+        from_name: 'Bar918 Reservations',
+        message: `Thank you ${data.name}, your booking for Table ${data.table} at ${data.time} has been confirmed.`,
+        reply_to: 'bar918.malkinsbank@gmail.com'
+      });
+
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+        to_email: 'bar918.malkinsbank@gmail.com',
+        from_name: data.name,
+        message: `New booking: Table ${data.table}, Time: ${data.time}, Name: ${data.name}, Phone: ${data.phone}, Requests: ${data.specialRequests}`,
+      });
+
+      alert('✅ Booking confirmed and emails sent!');
       document.getElementById('bookingForm').reset();
       document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
       selectedTable = null;
@@ -267,5 +287,7 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
 createTables();
 refreshAvailability();
 </script>
+
 </body>
 </html>
+
