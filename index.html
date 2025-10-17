@@ -1,3 +1,9 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bar918 Table Booking</title>
 <style>
   body {
     font-family: 'Inter', sans-serif;
@@ -120,7 +126,8 @@
     color: #012C4E;
   }
 </style>
-
+</head>
+<body>
 <h2>Book Your Table</h2>
 
 <div class="table-grid">
@@ -152,7 +159,7 @@
 </form>
 
 <script>
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec'; // e.g. https://script.google.com/macros/s/AKfycbx.../exec
 
 const tables = {
   left: [
@@ -203,7 +210,6 @@ function selectTable(number, btn) {
   selectedTable = number;
 }
 
-// ---- Fetch availability ----
 async function refreshAvailability() {
   try {
     const res = await fetch(WEBHOOK_URL + '?action=get');
@@ -220,7 +226,6 @@ async function refreshAvailability() {
   }
 }
 
-// ---- Submit form ----
 document.getElementById('bookingForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!selectedTable) return alert('Please select a table.');
@@ -262,3 +267,5 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
 createTables();
 refreshAvailability();
 </script>
+</body>
+</html>
