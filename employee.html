@@ -1,248 +1,108 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Bar918 — Staff Dashboard</title>
-<style>
-  :root{
-    --bg:#0f1720; --card:#071223; --blue:#012C4E; --gold:#EAD292; --muted:#94a3b8;
-    --free:#2ecc71; --booked:#f2c94c; --seated:#2196f3; --finished:#ef4444; --closed:#6b7280;
-  }
-  body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:#e6eef8}
-  .wrap{max-width:1200px;margin:18px auto;padding:18px;background:linear-gradient(180deg,#071223,rgba(7,18,35,0.6));border-radius:12px}
-  .header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .title{font-size:20px;color:var(--gold);font-weight:700}
-  .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
-  input[type="date"], input[type="text"], button{padding:8px 10px;border-radius:8px;border:0;background:transparent;color:var(--gold);border:1px solid rgba(255,255,255,0.04)}
-  .layout{display:flex;gap:18px;margin-top:18px;align-items:flex-start}
-  .col{width:48%;position:relative;background:transparent;padding:8px;border-radius:8px}
-  .divider{width:4%;display:flex;align-items:center;justify-content:center}
-  .mah{width:8px;background:#4E2A1E;height:420px;border-radius:6px}
-  .map{position:relative;height:420px;border-radius:6px}
-  .table{position:absolute;border-radius:10px;padding:10px 8px;text-align:center;font-weight:700;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,0.6);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .table .meta{font-size:12px;margin-top:6px;font-weight:600;color:rgba(255,255,255,0.85)}
-  .small{width:84px;height:56px}
-  .medium{width:120px;height:56px}
-  .large{width:180px;height:56px}
-  .free{background:var(--free);color:#012C4E;border:2px solid rgba(0,0,0,0.12)}
-  .booked{background:var(--booked);color:#012C4E}
-  .seated{background:var(--seated)}
-  .finished{background:var(--finished)}
-  .closed{background:var(--closed)}
-  .booking-list{margin-top:12px;background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;max-height:260px;overflow:auto}
-  .booking-row{padding:8px;border-bottom:1px solid rgba(255,255,255,0.02);display:flex;justify-content:space-between;gap:8px}
-  .legend{display:flex;gap:12px;margin-top:12px;align-items:center}
-  .sw{width:18px;height:14px;border-radius:4px;display:inline-block}
-  @media(max-width:900px){ .layout{flex-direction:column}.mah{height:10px;width:100%}.divider{width:100%;display:block}.map{height:620px} }
-</style>
+  <meta charset="UTF-8">
+  <title>Employee Portal - Bar 918</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #111827;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 { margin-bottom: 20px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: repeat(5, 140px);
+      grid-auto-rows: 90px;
+      gap: 25px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .table {
+      background: #2563eb;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .table:hover {
+      background: #1d4ed8;
+      transform: scale(1.05);
+    }
+
+    .table.booked {
+      background: #e11d48;
+    }
+
+    .bookings-list {
+      margin-top: 40px;
+      width: 80%;
+      background: #1f2937;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .booking-entry {
+      padding: 10px;
+      border-bottom: 1px solid #374151;
+    }
+  </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="header">
-      <div><div class="title">Bar918 — Staff Dashboard</div><div style="font-size:12px;color:var(--muted)">Floor map & bookings</div></div>
-      <div class="controls">
-        <label style="font-size:13px;color:var(--muted)">Date</label>
-        <input type="date" id="date" />
-        <input type="text" id="reason" placeholder="Closure reason (optional)" style="width:260px;color:var(--gold)"/>
-        <button id="toggleClose">Disable Bookings</button>
-        <button id="refresh">Refresh</button>
-      </div>
-    </div>
+  <h1>Employee Booking Dashboard</h1>
+  <div class="layout" id="layout"></div>
 
-    <div class="layout">
-      <div class="col">
-        <div class="map" id="leftMap">
-          <!-- left tables (spaced) -->
-          <div class="table large free" id="t7" style="left:110px;top:8px"><div>Table 7</div><div class="meta">6 seats</div></div>
-          <div class="table small free" id="t8" style="left:12px;top:12px"><div>Table 8</div><div class="meta">4 seats</div></div>
-          <div class="table small free" id="t11" style="left:12px;top:88px"><div>Table 11</div><div class="meta">4 seats</div></div>
-          <div class="table medium free" id="t10" style="left:110px;top:88px"><div>Table 10</div><div class="meta">4 seats</div></div>
-          <div class="table small free" id="t9" style="left:210px;top:88px"><div>Table 9</div><div class="meta">4 seats</div></div>
-          <div class="table medium free" id="t12" style="left:110px;top:158px"><div>Table 12</div><div class="meta">4 seats</div></div>
-          <div class="table medium free" id="t13" style="left:12px;top:158px"><div>Table 13</div><div class="meta">4 seats</div></div>
-          <div class="table small free" id="t15" style="left:12px;top:230px"><div>Table 15</div><div class="meta">4 seats</div></div>
-          <div class="table large free" id="t14" style="left:110px;top:230px"><div>Table 14</div><div class="meta">6 seats</div></div>
-
-          <div class="table small free" id="s3" style="left:22px;top:310px"><div>Snug 3</div><div class="meta">2 seats</div></div>
-          <div class="table small free" id="s2" style="left:110px;top:310px"><div>Snug 2</div><div class="meta">2 seats</div></div>
-          <div class="table small free" id="s1" style="left:200px;top:310px"><div>Snug 1</div><div class="meta">2 seats</div></div>
-        </div>
-      </div>
-
-      <div class="divider"><div class="mah"></div></div>
-
-      <div class="col">
-        <div class="map" id="rightMap">
-          <div class="table small free" id="t1" style="right:12px;top:8px"><div>Table 1</div><div class="meta">4 seats</div></div>
-          <div class="table large free" id="t2" style="right:110px;top:8px"><div>Table 2</div><div class="meta">6 seats</div></div>
-          <div class="table small free" id="t3" style="right:12px;top:88px"><div>Table 3</div><div class="meta">4 seats</div></div>
-          <div class="table medium free" id="t4" style="right:110px;top:88px"><div>Table 4</div><div class="meta">4 seats</div></div>
-          <div class="table small free" id="t5" style="right:200px;top:88px"><div>Table 5</div><div class="meta">4 seats</div></div>
-          <div class="table large free" id="t6" style="right:60px;top:158px"><div>Table 6</div><div class="meta">6 seats</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:18px;margin-top:16px;align-items:flex-start">
-      <div style="flex:1">
-        <div style="font-weight:700;color:var(--gold);margin-bottom:8px">Bookings for <span id="dayLabel"></span></div>
-        <div class="booking-list" id="bookingList"></div>
-      </div>
-      <div style="width:300px">
-        <div style="font-weight:700;color:var(--gold);margin-bottom:8px">Legend</div>
-        <div class="legend">
-          <div class="item"><span class="sw" style="background:var(--free)"></span> Free</div>
-          <div class="item"><span class="sw" style="background:var(--booked)"></span> Booked</div>
-          <div class="item"><span class="sw" style="background:var(--seated)"></span> Seated</div>
-          <div class="item"><span class="sw" style="background:var(--finished)"></span> Finished</div>
-          <div class="item"><span class="sw" style="background:var(--closed)"></span> Closed</div>
-        </div>
-      </div>
-    </div>
+  <div class="bookings-list" id="bookingsList">
+    <h2>Today's Bookings</h2>
+    <div id="bookings"></div>
   </div>
 
-<script>
-/* CONFIG */
-const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
-const TABLE_IDS = ['t1','t2','t3','t4','t5','t6','t7','t8','t9','t10','t11','t12','t13','t14','t15','s1','s2','s3'];
+  <script>
+    const layout = document.getElementById("layout");
+    const tables = [];
 
-const dateEl = document.getElementById('date');
-const refreshBtn = document.getElementById('refresh');
-const toggleClose = document.getElementById('toggleClose');
-const bookingList = document.getElementById('bookingList');
-const dayLabel = document.getElementById('dayLabel');
-const reasonInput = document.getElementById('reason');
-
-dateEl.value = new Date().toISOString().split('T')[0];
-dayLabel.textContent = dateEl.value;
-
-/* helper */
-function prettyTime(iso){
-  if(!iso) return '';
-  const d = new Date(iso);
-  if(isNaN(d)) return iso;
-  return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-}
-
-/* attach click handlers to tables for cycling status */
-TABLE_IDS.forEach(id=>{
-  const el = document.getElementById(id);
-  if(!el) return;
-  el.addEventListener('click', async ()=>{
-    // determine current
-    const current = el.classList.contains('free') ? 'free' : el.classList.contains('booked') ? 'booked' : el.classList.contains('seated') ? 'seated' : el.classList.contains('finished') ? 'finished' : 'free';
-    const next = (current==='free') ? 'booked' : (current==='booked' ? 'seated' : (current==='seated' ? 'finished' : 'free'));
-    el.className = `table ${next} ${el.classList.contains('small') ? 'small' : el.classList.contains('large') ? 'large' : 'medium'}`;
-    // identify table key
-    const tableKey = id.startsWith('s') ? ('S'+id.replace(/[^\d]/g,'')) : id.replace(/[^\D]/g,'');
-    // POST update to backend (text/plain)
-    try{
-      await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'updateStatus', table: tableKey, status: next, date: dateEl.value })});
-      await loadData();
-    }catch(e){ console.error(e); await loadData(); }
-  });
-});
-
-/* load bookings for selected date */
-async function loadData(){
-  const date = dateEl.value;
-  dayLabel.textContent = date;
-  bookingList.innerHTML = '<div style="padding:8px;color:var(--muted)">Loading…</div>';
-
-  try{
-    const res = await fetch(WEBHOOK + '?action=getBookings&date=' + encodeURIComponent(date));
-    const txt = await res.text();
-    const json = JSON.parse(txt);
-    const bookings = json.bookings || [];
-
-    // reset table styles to free
-    TABLE_IDS.forEach(id=>{
-      const el = document.getElementById(id);
-      if(!el) return;
-      // keep size classes
-      const size = el.classList.contains('large') ? 'large' : el.classList.contains('small') ? 'small' : 'medium';
-      el.className = `table ${size} free`;
-      // remove any guest label
-      const guest = el.querySelector('.guestinfo');
-      if(guest) guest.remove();
-    });
-
-    // fetch closedDates info
-    const res2 = await fetch(WEBHOOK + '?action=getAll&date=' + encodeURIComponent(date));
-    const txt2 = await res2.text();
-    const json2 = JSON.parse(txt2);
-    const closedList = json2.closedDates || [];
-    const closedToday = closedList.find(x => x.date === date);
-    if(closedToday){
-      // mark all closed
-      TABLE_IDS.forEach(id=>{ const el=document.getElementById(id); if(el){ el.className=`table ${el.classList.contains('large')?'large':el.classList.contains('small')?'small':'medium'} closed`; }});
-      bookingList.innerHTML = `<div style="padding:12px;color:var(--gold);font-weight:700">Bookings disabled: ${closedToday.reason||'No reason given'}</div>`;
-      reasonInput.value = closedToday.reason || '';
-      toggleClose.textContent = 'Enable Bookings';
-      return;
-    } else {
-      toggleClose.textContent = 'Disable Bookings';
-      reasonInput.value = '';
+    for (let i = 1; i <= 15; i++) {
+      const div = document.createElement("div");
+      div.className = "table";
+      div.textContent = `Table ${i}`;
+      layout.appendChild(div);
+      tables.push(div);
     }
 
-    if(bookings.length === 0){
-      bookingList.innerHTML = '<div style="padding:8px;color:var(--muted)">No bookings for this date</div>';
-    } else {
-      bookingList.innerHTML = '';
-      bookings.forEach(b=>{
-        // show on map
-        const tableKey = String(b.table || '');
-        let el;
-        if(/^S/i.test(tableKey)){ el = document.getElementById('s' + tableKey.replace(/[^\d]/g,'')); }
-        else el = document.getElementById('t' + tableKey);
-        if(el){
-          const size = el.classList.contains('large') ? 'large' : el.classList.contains('small') ? 'small' : 'medium';
-          el.className = `table ${size} ${ (b.status||'Booked').toLowerCase() }`;
-          // add guest label
-          const guest = document.createElement('div'); guest.className='guestinfo'; guest.style.fontSize='12px'; guest.style.marginTop='6px';
-          guest.style.color = el.classList.contains('booked') ? '#012C4E' : '#fff';
-          guest.textContent = `${b.name || ''}${b.time? ' • ' + prettyTime(b.time):''}`;
-          el.appendChild(guest);
-        }
-        // add to list
-        const row = document.createElement('div'); row.className='booking-row';
-        row.innerHTML = `<div><strong>${b.name}</strong><div style="font-size:12px;color:var(--muted)">${b.table} • ${prettyTime(b.time)} • ${b.guests||''} pax</div></div><div style="text-align:right">${b.contact||''}<div style="font-size:12px;color:var(--muted)">${b.notes||''}</div></div>`;
-        bookingList.appendChild(row);
+    async function fetchBookings() {
+      const date = new Date().toISOString().split('T')[0];
+      const res = await fetch(`https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec?date=${date}`);
+      const data = await res.json();
+
+      document.getElementById("bookings").innerHTML = "";
+      tables.forEach(t => t.classList.remove("booked"));
+
+      data.forEach(entry => {
+        const div = document.createElement("div");
+        div.className = "booking-entry";
+        div.innerHTML = `<b>${entry.name}</b> - ${entry.table} (${entry.time})`;
+        document.getElementById("bookings").appendChild(div);
+
+        const table = tables.find(t => t.textContent === entry.table);
+        if (table) table.classList.add("booked");
       });
     }
-  }catch(err){
-    console.error('loadData error', err);
-    bookingList.innerHTML = '<div style="padding:8px;color:#f88">Error loading bookings</div>';
-  }
-}
 
-/* toggle close/open day */
-toggleClose.addEventListener('click', async ()=>{
-  const date = dateEl.value;
-  const reason = reasonInput.value || '';
-  // ask backend whether closed already: call getAll to get closedDates
-  const r = await fetch(WEBHOOK + '?action=getAll&date=' + encodeURIComponent(date));
-  const j = JSON.parse(await r.text());
-  const closedList = j.closedDates || [];
-  const closedToday = closedList.find(x=>x.date === date);
-  if(closedToday){
-    // open day
-    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'openDay', date })});
-  } else {
-    // close day with reason
-    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'closeDay', date, reason })});
-  }
-  await loadData();
-});
-
-/* events */
-refresh.addEventListener('click', ()=> loadData());
-dateEl.addEventListener('change', ()=> loadData());
-
-/* initial */
-loadData();
-setInterval(loadData,60000);
-</script>
+    fetchBookings();
+    setInterval(fetchBookings, 60000);
+  </script>
 </body>
 </html>
