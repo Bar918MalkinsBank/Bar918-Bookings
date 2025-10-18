@@ -1,91 +1,124 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Bar918 — Employee Portal</title>
 <style>
-  :root{
-    --blue:#012C4E;
-    --gold:#EAD292;
-    --mahogany:#4B1E0E;
-    --bg:#071223;
-    --muted:#9fb0bf;
-    --free:#2ecc71; --booked:#f2c94c; --seated:#2196f3; --finished:#ef4444; --closed:#6b7280;
-  }
-  body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--gold)}
-  .wrap{max-width:1200px;margin:20px auto;padding:18px;border-radius:12px}
-  .header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .title{font-weight:800;font-size:20px;color:var(--gold)}
-  .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
-  input[type=date], input[type=text], button{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--gold)}
-  .floor{display:grid;grid-template-columns:1fr 36px 1fr;gap:14px;margin-top:16px;align-items:start}
-  .section{padding:8px}
-  .mah{width:8px;background:var(--mahogany);height:420px;border-radius:6px;margin:auto}
-  .grid-left, .grid-right{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-content:start}
-  .snug-row{display:flex;gap:18px;margin-top:12px}
-  .card{background:var(--free);color:var(--blue);border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;cursor:pointer;min-height:72px}
-  .card.small{min-height:56px}
-  .card.large{min-height:72px}
-  .card.free{background:var(--free);color:#012C4E}
-  .card.booked{background:var(--booked);color:#012C4E}
-  .card.seated{background:var(--seated);color:#fff}
-  .card.finished{background:var(--finished);color:#fff}
-  .card.closed{background:var(--closed);color:#fff;opacity:0.9}
-  .meta{font-size:13px;color:rgba(255,255,255,0.85);margin-top:6px}
-  .booking-list{margin-top:12px;background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;max-height:260px;overflow:auto}
-  .booking-row{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
-  .controls .btn{background:var(--blue);color:var(--gold);padding:8px 10px;border-radius:6px;border:0;cursor:pointer}
-  .legend{display:flex;gap:12px;margin-top:10px}
-  .sw{width:18px;height:12px;border-radius:3px;display:inline-block}
-  @media(max-width:900px){ .floor{grid-template-columns:1fr;}.mah{display:none}.grid-left,.grid-right{grid-template-columns:repeat(2,1fr)} .snug-row{justify-content:flex-start} }
+:root{--blue:#012C4E;--gold:#EAD292;--mah:#4B1E0E;--bg:#071223;--muted:#9fb0bf}
+body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--gold)}
+.container{max-width:1200px;margin:18px auto;padding:18px}
+.header{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.title{font-size:20px;font-weight:800}
+.controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+input[type=date],input[type=text],button,select{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--gold)}
+.btn{background:var(--blue);color:var(--gold);padding:8px 10px;border-radius:6px;border:0;cursor:pointer}
+.floor{display:grid;grid-template-columns:1fr 36px 1fr;gap:14px;margin-top:16px;align-items:start}
+.section{padding:8px}
+.mah{width:8px;background:var(--mah);height:420px;border-radius:6px;margin:auto}
+.grid-left,.grid-right{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.snug-row{display:flex;gap:12px;margin-top:12px}
+.card{border-radius:10px;padding:10px;text-align:center;font-weight:800;cursor:pointer;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.card.small{min-height:56px}
+.card.large{min-height:76px}
+.card.free{background:#2ecc71;color:#012C4E}
+.card.booked{background:#f2c94c;color:#012C4E}
+.card.seated{background:#2196f3;color:#fff}
+.card.finished{background:#ef4444;color:#fff}
+.card.blocked{background:#6b7280;color:#fff}
+.controls-legend{display:flex;gap:12px;align-items:center;margin-top:12px}
+.booking-table{width:100%;border-collapse:collapse;margin-top:14px}
+.booking-table th, .booking-table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;color:var(--gold)}
+.panel{margin-top:14px;background:rgba(255,255,255,0.02);padding:12px;border-radius:8px}
+.small-btn{padding:6px 8px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--gold);cursor:pointer}
+@media(max-width:900px){.floor{grid-template-columns:1fr}.mah{display:none}.grid-left,.grid-right{grid-template-columns:repeat(2,1fr)}.snug-row{justify-content:flex-start}}
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="header">
-      <div><div class="title">Bar918 — Staff Dashboard</div><div style="font-size:13px;color:var(--muted)">Click a table to cycle status · Refresh every 60s</div></div>
-      <div class="controls">
-        <label style="font-size:13px;color:var(--muted)">Date</label>
-        <input id="date" type="date">
-        <input id="reason" type="text" placeholder="Closure reason (optional)">
-        <button id="toggleClose" class="btn">Disable Bookings</button>
-        <button id="refresh" class="btn">Refresh</button>
-      </div>
+<div class="container">
+  <div class="header">
+    <div>
+      <div class="title">Bar918 — Employee Portal</div>
+      <div style="font-size:13px;color:var(--muted)">Calendar & live floor map — click a table for actions</div>
     </div>
 
-    <div class="floor">
-      <div class="section">
-        <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Left side</div>
-        <div class="grid-left" id="leftGrid"></div>
-        <div class="snug-row" id="snugRow"></div>
-      </div>
-
-      <div class="mah"></div>
-
-      <div class="section">
-        <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Right side</div>
-        <div class="grid-right" id="rightGrid"></div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:18px;margin-top:16px">
-      <div style="flex:1">
-        <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Bookings for <span id="dayLabel"></span></div>
-        <div class="booking-list" id="bookingList"></div>
-      </div>
-      <div style="width:300px">
-        <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Legend</div>
-        <div class="legend">
-          <div class="item"><span class="sw" style="background:var(--free)"></span> Free</div>
-          <div class="item"><span class="sw" style="background:var(--booked)"></span> Booked</div>
-          <div class="item"><span class="sw" style="background:var(--seated)"></span> Seated</div>
-          <div class="item"><span class="sw" style="background:var(--finished)"></span> Finished</div>
-          <div class="item"><span class="sw" style="background:var(--closed)"></span> Closed</div>
-        </div>
-      </div>
+    <div class="controls">
+      <label style="font-size:13px;color:var(--muted)">Date</label>
+      <input id="date" type="date">
+      <input id="reason" type="text" placeholder="Closure reason (optional)">
+      <button id="toggleClose" class="btn">Disable Bookings</button>
+      <button id="refresh" class="btn">Refresh</button>
     </div>
   </div>
+
+  <!-- Bookings list (calendar) -->
+  <div class="panel" style="margin-top:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-weight:800">Bookings for <span id="dayLabel"></span></div>
+      <div>
+        <button id="addBookingBtn" class="small-btn">+ New Booking</button>
+      </div>
+    </div>
+
+    <table class="booking-table" id="bookingTable" style="margin-top:12px">
+      <thead>
+        <tr>
+          <th>Name</th><th>Table</th><th>Time</th><th>Seats</th><th>BabySeat</th><th>SpecialRequests</th><th>Contact</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="bookingTbody"><tr><td colspan="8" style="color:var(--muted)">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="floor">
+    <div class="section">
+      <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Left side</div>
+      <div class="grid-left" id="leftGrid"></div>
+      <div class="snug-row" id="snugRow"></div>
+    </div>
+
+    <div><div class="mah" aria-hidden="true"></div></div>
+
+    <div class="section">
+      <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Right side</div>
+      <div class="grid-right" id="rightGrid"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+    <div class="controls-legend">
+      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#2ecc71;display:inline-block;border-radius:3px"></span> Free</div>
+      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#f2c94c;display:inline-block;border-radius:3px"></span> Booked</div>
+      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#2196f3;display:inline-block;border-radius:3px"></span> Seated</div>
+      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#ef4444;display:inline-block;border-radius:3px"></span> Finished</div>
+      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#6b7280;display:inline-block;border-radius:3px"></span> Blocked</div>
+    </div>
+  </div>
+</div>
+
+<!-- Add booking modal (simple) -->
+<div id="modal" style="display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);align-items:center;justify-content:center">
+  <div style="background:#071223;padding:18px;border-radius:10px;max-width:720px;width:94%;color:var(--gold)">
+    <h3 style="margin-top:0">Add booking</h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <input id="m_name" placeholder="Name">
+      <input id="m_email" placeholder="Email">
+      <input id="m_phone" placeholder="Phone">
+      <select id="m_table"></select>
+      <select id="m_seats"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+      <select id="m_baby"><option>No</option><option>Yes</option></select>
+      <input id="m_date" type="date">
+      <input id="m_time" type="time">
+      <input id="m_source" value="Employee" disabled>
+    </div>
+    <div style="margin-top:12px">
+      <textarea id="m_notes" placeholder="Special requests" style="width:100%;min-height:80px;border-radius:8px;padding:8px"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button id="m_cancel" class="small-btn">Cancel</button>
+      <button id="m_save" class="btn">Save booking</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* CONFIG */
@@ -99,156 +132,220 @@ const RIGHT_TABLES = [
   { number: 1, seats: 4 }, { number: 2, seats: 6 }, { number: 3, seats: 4 },
   { number: 4, seats: 4 }, { number: 5, seats: 4 }, { number: 6, seats: 6 }
 ];
-const SNUGS = [ {number:'S1', seats:2}, {number:'S2', seats:2}, {number:'S3', seats:2} ];
+const SNUGS = [{number:'S1',seats:2},{number:'S2',seats:2},{number:'S3',seats:2}];
 
+const dateEl = document.getElementById('date');
+const dayLabel = document.getElementById('dayLabel');
 const leftGrid = document.getElementById('leftGrid');
 const rightGrid = document.getElementById('rightGrid');
 const snugRow = document.getElementById('snugRow');
-const dateEl = document.getElementById('date');
+const bookingTbody = document.getElementById('bookingTbody');
 const refreshBtn = document.getElementById('refresh');
-const toggleBtn = document.getElementById('toggleClose');
+const toggleCloseBtn = document.getElementById('toggleClose');
 const reasonInput = document.getElementById('reason');
-const bookingList = document.getElementById('bookingList');
-const dayLabel = document.getElementById('dayLabel');
+const addBookingBtn = document.getElementById('addBookingBtn');
 
 dateEl.value = new Date().toISOString().split('T')[0];
 dayLabel.textContent = dateEl.value;
 
-/* helpers */
+/* Build map cards */
 function mkCard(t){
   const el = document.createElement('div');
-  el.className = 'card ' + (t.seats===2 ? 'small' : t.seats===6 ? 'large' : 'medium') + ' free';
+  el.className = 'card ' + (t.seats===2?'small':t.seats===6?'large':'medium') + ' free';
   el.dataset.table = String(t.number);
   el.innerHTML = `<div>Table ${t.number}</div><div class="meta">${t.seats} seats</div>`;
-  el.addEventListener('click', async ()=>{
-    // cycle status
-    const current = el.classList.contains('free') ? 'free' : el.classList.contains('booked') ? 'booked' : el.classList.contains('seated') ? 'seated' : el.classList.contains('finished') ? 'finished' : 'free';
-    const next = (current==='free') ? 'booked' : (current==='booked' ? 'seated' : (current==='seated' ? 'finished' : 'free'));
-    // preserve size class
-    const size = el.classList.contains('large') ? 'large' : el.classList.contains('small') ? 'small' : 'medium';
-    el.className = `card ${size} ${next}`;
-    // POST update to backend
-    try{
-      await fetch(WEBHOOK, { method:'POST', headers: {'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'updateStatus', table: el.dataset.table, status: next, date: dateEl.value }) });
-      await loadData();
-    }catch(e){ console.error('update failed',e); await loadData(); }
-  });
+  el.addEventListener('click', ()=>onCardClick(el));
   return el;
 }
-
-function buildGrid(){
+function buildMap(){
   LEFT_TABLES.forEach(t => leftGrid.appendChild(mkCard(t)));
   SNUGS.forEach(s => snugRow.appendChild(mkCard(s)));
   RIGHT_TABLES.forEach(t => rightGrid.appendChild(mkCard(t)));
 }
 
-/* loadData fetch bookings + closedDates + display map */
+/* Load bookings for date, closedDates, settings */
 async function loadData(){
   const date = dateEl.value;
   dayLabel.textContent = date;
-  bookingList.innerHTML = '<div style="padding:8px;color:var(--muted)">Loading…</div>';
+  bookingTbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted)">Loading…</td></tr>';
 
-  // reset
-  document.querySelectorAll('.card').forEach(c => {
+  // reset map
+  document.querySelectorAll('.card').forEach(c=>{
     const size = c.classList.contains('large') ? 'large' : c.classList.contains('small') ? 'small' : 'medium';
     c.className = `card ${size} free`;
     const guest = c.querySelector('.guest'); if(guest) guest.remove();
   });
 
   try{
-    // get all bookings for the day
-    const res = await fetch(WEBHOOK + '?action=getBookings&date=' + encodeURIComponent(date));
-    const txt = await res.text();
+    // bookings
+    const r = await fetch(WEBHOOK + '?action=getBookings&date=' + encodeURIComponent(date));
+    const txt = await r.text();
     const json = JSON.parse(txt);
     const bookings = json.bookings || [];
 
-    // get closedDates info
-    const res2 = await fetch(WEBHOOK + '?action=getAll&date=' + encodeURIComponent(date));
-    const txt2 = await res2.text();
-    const json2 = JSON.parse(txt2);
-    const closedDates = json2.closedDates || [];
-    const closedToday = closedDates.find(c => c.date === date);
+    // closedDates + settings
+    const r2 = await fetch(WEBHOOK + '?action=getAll&date=' + encodeURIComponent(date));
+    const j2 = JSON.parse(await r2.text());
+    const closedDates = j2.closedDates || [];
+    const settingsRes = await fetch(WEBHOOK + '?action=getSettings'); const sjson = JSON.parse(await settingsRes.text());
+    const settings = sjson.settings || [];
+
+    // if closed date
+    const closedToday = closedDates.find(c=>c.date === date);
     if(closedToday){
-      // mark closed
-      document.querySelectorAll('.card').forEach(c => {
+      document.querySelectorAll('.card').forEach(c=>{
         const size = c.classList.contains('large') ? 'large' : c.classList.contains('small') ? 'small' : 'medium';
-        c.className = `card ${size} closed`;
+        c.className = `card ${size} blocked`;
       });
-      bookingList.innerHTML = `<div style="padding:12px;color:var(--gold);font-weight:700">Bookings disabled for ${date}: ${closedToday.reason||'No reason'}</div>`;
+      bookingTbody.innerHTML = `<tr><td colspan="8" style="color:var(--gold);font-weight:700">Bookings disabled for ${date}: ${closedToday.reason||'No reason'}</td></tr>`;
       reasonInput.value = closedToday.reason || '';
-      toggleBtn.textContent = 'Enable Bookings';
+      toggleCloseBtn.textContent = 'Enable Bookings';
       return;
     } else {
-      toggleBtn.textContent = 'Disable Bookings';
+      toggleCloseBtn.textContent = 'Disable Bookings';
       reasonInput.value = '';
     }
 
-    // Display bookings on map and list
-    if(bookings.length === 0){
-      bookingList.innerHTML = '<div style="padding:8px;color:var(--muted)">No bookings for this date</div>';
-    } else {
-      bookingList.innerHTML = '';
+    // apply blocked settings
+    (settings || []).forEach(s=>{
+      if(String(s.TableNumber)){
+        const el = document.querySelector('.card[data-table="'+String(s.TableNumber)+'"]');
+        if(el && String(s.IsBlocked) === 'TRUE'){ const size = el.classList.contains('large')?'large':el.classList.contains('small')?'small':'medium'; el.className=`card ${size} blocked`; }
+      }
+    });
+
+    // fill booking table
+    if(bookings.length === 0) bookingTbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted)">No bookings for this date</td></tr>';
+    else {
+      bookingTbody.innerHTML = '';
       bookings.forEach(b=>{
-        // map to element
-        const key = String(b.table || '');
-        let el = null;
-        if(/^S/i.test(key)) el = document.querySelector('.card[data-table="'+key+'"]');
-        else el = document.querySelector('.card[data-table="'+key+'"]');
+        // table card update
+        const key = String(b.table);
+        const el = document.querySelector('.card[data-table="'+key+'"]');
         if(el){
-          const size = el.classList.contains('large') ? 'large' : el.classList.contains('small') ? 'small' : 'medium';
+          const size = el.classList.contains('large')?'large':el.classList.contains('small')?'small':'medium';
           el.className = `card ${size} ${ (b.status||'Booked').toLowerCase() }`;
-          // add guest snippet
+          // guest snippet
           let guest = el.querySelector('.guest');
-          if(!guest){ guest = document.createElement('div'); guest.className='guest'; guest.style.fontSize='13px'; guest.style.marginTop='8px'; el.appendChild(guest); }
-          guest.textContent = `${b.name || ''}${b.time ? ' • ' + (new Date(b.time)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : ''}`;
+          if(!guest){ guest = document.createElement('div'); guest.className='guest'; guest.style.marginTop='8px'; guest.style.fontSize='13px'; el.appendChild(guest); }
+          guest.textContent = `${b.name} • ${(new Date(b.time)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
         }
-        // add booking to list
-        const row = document.createElement('div'); row.className='booking-row';
-        row.innerHTML = `<div><strong>${b.name}</strong><div style="font-size:12px;color:var(--muted)">${b.table} • ${(new Date(b.time)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})} • ${b.guests||''} pax</div></div><div style="text-align:right">${b.contact||''}<div style="font-size:12px;color:var(--muted)">${b.notes||''}</div></div>`;
-        bookingList.appendChild(row);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${b.name||''}</td><td>${b.table||''}</td><td>${(new Date(b.time)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})||''}</td><td>${b.seats||''}</td><td>${b.babySeat||''}</td><td>${b.specialRequests||''}</td><td>${b.phone||''}</td><td>${b.status||'Booked'}</td>`;
+        bookingTbody.appendChild(tr);
       });
     }
-
   }catch(err){
-    console.error('loadData error', err);
-    bookingList.innerHTML = '<div style="padding:8px;color:#f88">Error loading bookings</div>';
+    console.error('loadData err', err);
+    bookingTbody.innerHTML = '<tr><td colspan="8" style="color:#f88">Error loading bookings</td></tr>';
   }
 }
 
-/* toggle close/open */
-toggleBtn.addEventListener('click', async ()=>{
+/* Card click opens a small action sheet using prompt (simple) */
+async function onCardClick(el){
+  // build options
+  const opts = ['Seated','Finished','Block/Unblock','Cancel'];
+  const choice = prompt(`Table ${el.dataset.table} — type: Seated / Finished / Block / Unblock (case-insensitive)`);
+  if(!choice) return;
+  const cmd = choice.trim().toLowerCase();
+  if(cmd === 'seated' || cmd === 'finish' || cmd === 'finished'){
+    const status = (cmd === 'seated') ? 'Seated' : 'Finished';
+    await updateStatus(el.dataset.table, status, dateEl.value);
+    await loadData();
+  } else if(cmd === 'block' || cmd === 'unblock' || cmd==='block/unblock' || cmd==='block/unblock'){
+    // toggle
+    const r = await fetch(WEBHOOK + '?action=getSettings'); const s = JSON.parse(await r.text());
+    const existing = (s.settings||[]).find(x=>String(x.TableNumber) === String(el.dataset.table));
+    const isBlocked = existing ? (String(existing.IsBlocked) === 'TRUE') : false;
+    const newBlocked = !isBlocked;
+    // call updateSetting
+    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'setBlock', table: el.dataset.table, block: newBlocked })});
+    await loadData();
+  } else {
+    // treat as Cancel/no-op
+  }
+}
+
+/* update status (POST) */
+async function updateStatus(table, status, date){
+  await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'updateStatus', table, status, date }) });
+}
+
+/* toggle close date */
+toggleCloseBtn.addEventListener('click', async ()=>{
   const date = dateEl.value;
   const reason = reasonInput.value || '';
-  // check if closed already
+  // fetch closedDates
   const r = await fetch(WEBHOOK + '?action=getAll&date=' + encodeURIComponent(date));
   const j = JSON.parse(await r.text());
   const closedList = j.closedDates || [];
-  const closedToday = closedList.find(x => x.date === date);
+  const closedToday = closedList.find(c => c.date === date);
   if(closedToday){
     // open
-    await fetch(WEBHOOK, { method:'POST', headers: {'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'openDay', date }) });
+    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'openDay', date })});
   } else {
-    // close
-    await fetch(WEBHOOK, { method:'POST', headers: {'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'closeDay', date, reason }) });
+    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'closeDay', date, reason })});
   }
   await loadData();
 });
 
+/* New booking modal */
+const modal = document.getElementById('modal');
+const m_table = document.getElementById('m_table');
+addBookingBtn.addEventListener('click', async ()=>{
+  // populate table select with all tables
+  m_table.innerHTML = '';
+  [ ...LEFT_TABLES, ...RIGHT_TABLES, ...SNUGS ].forEach(t=>{
+    const opt = document.createElement('option');
+    opt.value = t.number; opt.textContent = `${t.number} (${t.seats} seats)`;
+    m_table.appendChild(opt);
+  });
+  // default date
+  document.getElementById('m_date').value = dateEl.value;
+  modal.style.display = 'flex';
+});
+document.getElementById('m_cancel').addEventListener('click', ()=> modal.style.display='none');
+document.getElementById('m_save').addEventListener('click', async ()=>{
+  const b = {
+    name: document.getElementById('m_name').value.trim(),
+    email: document.getElementById('m_email').value.trim(),
+    phone: document.getElementById('m_phone').value.trim(),
+    table: document.getElementById('m_table').value,
+    seats: document.getElementById('m_seats').value,
+    babySeat: document.getElementById('m_baby').value,
+    specialRequests: document.getElementById('m_notes').value,
+    date: document.getElementById('m_date').value,
+    time: document.getElementById('m_time').value ? (document.getElementById('m_date').value + 'T' + document.getElementById('m_time').value + ':00') : (document.getElementById('m_date').value + 'T12:00:00'),
+    status: 'Booked',
+    source: 'Employee'
+  };
+  // POST to createBooking
+  const res = await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'createBooking', booking: b }) });
+  const txt = await res.text(); const j = JSON.parse(txt);
+  if(j.status === 'ok'){ modal.style.display='none'; await loadData(); alert('Booking added'); }
+  else alert('Failed: ' + (j.message || 'unknown'));
+});
+
+/* simple GET settings action */
+async function getSettings(){ const r = await fetch(WEBHOOK + '?action=getSettings'); return JSON.parse(await r.text()); }
+
+/* wire events */
 refreshBtn.addEventListener('click', ()=>loadData());
 dateEl.addEventListener('change', ()=>loadData());
 
-/* build & initial load */
-buildGrid = () => {
+/* build & init */
+function init(){
+  buildMap();
+  loadData();
+  setInterval(loadData, 60000);
+}
+function buildMap(){
   LEFT_TABLES.forEach(t => leftGrid.appendChild(mkCard(t)));
   SNUGS.forEach(s => snugRow.appendChild(mkCard(s)));
   RIGHT_TABLES.forEach(t => rightGrid.appendChild(mkCard(t)));
-};
-/* small helper to reuse mkCard for employee page */
-function mkCard(t){ const el=document.createElement('div'); el.className='card '+(t.seats===2?'small':t.seats===6?'large':'medium')+' free'; el.dataset.table=String(t.number); el.innerHTML=`<div>Table ${t.number}</div><div class="meta">${t.seats} seats</div>`; el.addEventListener('click', async ()=>{const current = el.classList.contains('free')?'free':el.classList.contains('booked')?'booked':el.classList.contains('seated')?'seated':el.classList.contains('finished')?'finished':'free'; const next=(current==='free'?'booked':(current==='booked'?'seated':(current==='seated'?'finished':'free'))); const size = el.classList.contains('large')?'large':el.classList.contains('small')?'small':'medium'; el.className=`card ${size} ${next}`; try{ await fetch(WEBHOOK,{ method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'updateStatus', table: el.dataset.table, status: next, date: dateEl.value }) }); await loadData(); }catch(e){ console.error(e); await loadData(); } }); return el; }
-
-buildGrid();
-loadData();
-setInterval(loadData, 60000);
+}
+function mkCard(t){ const el=document.createElement('div'); el.className='card '+(t.seats===2?'small':t.seats===6?'large':'medium')+' free'; el.dataset.table=t.number; el.innerHTML=`<div>Table ${t.number}</div><div class="meta">${t.seats} seats</div>`; el.addEventListener('click', ()=>onCardClick(el)); return el; }
+init();
 </script>
 </body>
 </html>
