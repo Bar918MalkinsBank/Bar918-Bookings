@@ -218,12 +218,21 @@ function selectTable(number, btn) {
 
 async function refreshAvailability() {
   try {
-    const res = await fetch(WEBHOOK_URL + '?action=get');
+    const selectedDate = document.getElementById('time').value.split('T')[0];
+    const res = await fetch(WEBHOOK_URL + '?action=getAll&date=' + selectedDate);
     const txt = await res.text();
     const data = JSON.parse(txt);
+
+    if (data.closedDates.some(r => r.date === selectedDate)) {
+      const reason = data.closedDates.find(r => r.date === selectedDate)?.reason || 'Bookings unavailable';
+      alert('❌ ' + reason);
+      document.getElementById('bookingForm').reset();
+      return;
+    }
+
     document.querySelectorAll('.table').forEach(t => t.classList.remove('booked'));
-    data.bookedTables.forEach(num => {
-      const el = document.getElementById(`table-${num}`);
+    data.tables.forEach(num => {
+      const el = document.getElementById(`table-${num.table}`);
       if (el) el.classList.add('booked');
     });
   } catch (err) {
@@ -290,4 +299,5 @@ refreshAvailability();
 
 </body>
 </html>
+
 
