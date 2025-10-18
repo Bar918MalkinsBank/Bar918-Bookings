@@ -1,114 +1,162 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Bar918 Employee Portal</title>
+<div id="employee-dashboard" class="p-6 bg-[#f9f9f9]">
+  <h1 style="color:#012C4E;font-size:2rem;font-weight:bold;">Bar918 Table Dashboard</h1>
+  <p style="margin-bottom:1rem;">Live table status + booking controls</p>
+
+  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+    <label for="dateSelect">📅 Select Date:</label>
+    <input type="date" id="dateSelect" style="padding:0.3rem;border-radius:5px;">
+    <input type="text" id="closureReason" placeholder="Reason (e.g., Private Event)" style="padding:0.3rem;border-radius:5px;width:200px;">
+    <button id="toggleClose" style="background:#012C4E;color:white;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;">Disable Bookings</button>
+  </div>
+
+  <div id="closureNotice" style="color:red;font-weight:600;margin-bottom:1rem;display:none;"></div>
+
+  <div id="bar-layout" class="grid grid-cols-2 gap-8 mt-6">
+    <div>
+      <h2 style="color:#012C4E;">Left Side</h2>
+      <div id="left-section" class="grid grid-cols-3 gap-3 mt-3"></div>
+    </div>
+    <div>
+      <h2 style="color:#012C4E;">Right Side</h2>
+      <div id="right-section" class="grid grid-cols-3 gap-3 mt-3"></div>
+    </div>
+  </div>
+
+  <div class="flex justify-center mt-8">
+    <div id="snug-section" class="flex gap-3"></div>
+  </div>
+</div>
+
 <style>
-  body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f9f9f9;
-    padding: 20px;
-    color: #012C4E;
-  }
-
-  h2 { text-align: center; }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-
-  th, td {
-    padding: 8px;
-    border: 1px solid #ddd;
-    text-align: left;
-  }
-
-  th {
-    background-color: #012C4E;
-    color: #fff;
-  }
-
-  .status {
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 5px;
-  }
-
-  .booked { background: #d8b86c; color: #012C4E; }
-  .seated { background: #4caf50; color: #fff; }
-  .finished { background: #9e9e9e; color: #fff; }
-
-  button {
-    background: #012C4E;
-    color: #EAD292;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background: #EAD292;
-    color: #012C4E;
-  }
+.table {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:60px;width:90px;border-radius:12px;font-weight:600;color:white;
+  border:2px solid #012C4E;cursor:pointer;transition:all 0.3s ease;
+}
+.table.large{width:100px;}
+.table.small{width:70px;}
+.table.free{background:#4CAF50;}
+.table.booked{background:#EAD292;color:#012C4E;}
+.table.seated{background:#2196f3;}
+.table.finished{background:#ff4444;}
+.table:hover{transform:scale(1.05);}
 </style>
-</head>
-<body>
-<h2>Bar918 Booking Management</h2>
-<button onclick="refreshBookings()">Refresh</button>
-<table id="bookingTable">
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Name</th>
-      <th>Phone</th>
-      <th>Email</th>
-      <th>Table</th>
-      <th>Time</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
 
 <script>
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzNxPUHl-eQgnZj5hXDBOEi8BXAZFiUBfNxolzKZGHUKPr2ilWAvZI05UHJuwf9MiOS/exec';
 
-async function refreshBookings() {
-  const res = await fetch(WEBHOOK_URL + '?action=getAll');
-  const text = await res.text();
-  const data = JSON.parse(text);
-  const tbody = document.querySelector('#bookingTable tbody');
-  tbody.innerHTML = '';
+const tables = {
+  left: [
+    { number: 7, seats: 6 }, { number: 8, seats: 4 }, { number: 9, seats: 4 },
+    { number: 10, seats: 4 }, { number: 11, seats: 4 }, { number: 12, seats: 4 },
+    { number: 13, seats: 4 }, { number: 14, seats: 6 }, { number: 15, seats: 4 }
+  ],
+  right: [
+    { number: 1, seats: 4 }, { number: 2, seats: 6 }, { number: 3, seats: 4 },
+    { number: 4, seats: 4 }, { number: 5, seats: 4 }, { number: 6, seats: 6 }
+  ],
+  snug: [
+    { number: 'S1', seats: 2 }, { number: 'S2', seats: 2 }, { number: 'S3', seats: 2 }
+  ]
+};
 
-  data.bookings.forEach(r => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.date}</td>
-      <td>${r.name}</td>
-      <td>${r.phone}</td>
-      <td>${r.email}</td>
-      <td>${r.table}</td>
-      <td>${r.time}</td>
-      <td><span class="status ${r.status.toLowerCase()}" onclick="toggleStatus('${r.id}', '${r.status}')">${r.status}</span></td>
-    `;
-    tbody.appendChild(tr);
+let closedDates = [];
+
+function createTables() {
+  ['left', 'right'].forEach(side => {
+    const section = document.getElementById(`${side}-section`);
+    tables[side].forEach(t => {
+      const div = document.createElement('div');
+      div.className = `table free ${t.seats === 6 ? 'large' : t.seats === 2 ? 'small' : 'medium'}`;
+      div.id = `table-${t.number}`;
+      div.innerHTML = `Table ${t.number}<br><small>${t.seats} seats</small>`;
+      div.onclick = () => updateTableStatus(t.number);
+      section.appendChild(div);
+    });
+  });
+  const snug = document.getElementById('snug-section');
+  tables.snug.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'table small free';
+    div.id = `table-${t.number}`;
+    div.innerHTML = `${t.number}<br><small>${t.seats} seats</small>`;
+    div.onclick = () => updateTableStatus(t.number);
+    snug.appendChild(div);
   });
 }
 
-async function toggleStatus(id, status) {
-  const next = status === 'Booked' ? 'Seated' : status === 'Seated' ? 'Finished' : 'Booked';
+async function loadTableStatuses() {
+  const date = document.getElementById('dateSelect').value;
+  try {
+    const res = await fetch(WEBHOOK_URL + '?action=getAll&date=' + date);
+    const text = await res.text();
+    const data = JSON.parse(text);
+
+    document.querySelectorAll('.table').forEach(el => el.classList.remove('booked','seated','finished','free'));
+    data.tables.forEach(row => {
+      const el = document.getElementById(`table-${row.table}`);
+      if (el) el.classList.add(row.status.toLowerCase());
+    });
+
+    closedDates = data.closedDates.map(r => r.date);
+    const closureNotice = document.getElementById('closureNotice');
+    const toggleButton = document.getElementById('toggleClose');
+    const closureReason = document.getElementById('closureReason');
+
+    const closedInfo = data.closedDates.find(r => r.date === date);
+    if (closedInfo) {
+      closureNotice.style.display = 'block';
+      closureNotice.textContent = `⚠️ Bookings disabled: ${closedInfo.reason || 'No reason provided'}`;
+      toggleButton.textContent = 'Enable Bookings';
+      toggleButton.style.background = '#ff4444';
+      closureReason.value = closedInfo.reason || '';
+    } else {
+      closureNotice.style.display = 'none';
+      toggleButton.textContent = 'Disable Bookings';
+      toggleButton.style.background = '#012C4E';
+      closureReason.value = '';
+    }
+  } catch (err) {
+    console.error('Error fetching table data:', err);
+  }
+}
+
+async function updateTableStatus(tableNumber) {
+  const el = document.getElementById(`table-${tableNumber}`);
+  if (!el) return;
+  const next = getNextStatus(el);
+  el.className = `table medium ${next}`;
+  const date = document.getElementById('dateSelect').value;
   await fetch(WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'updateStatus', id, status: next })
+    body: JSON.stringify({ action: 'updateStatus', table: tableNumber, status: next, date })
   });
-  refreshBookings();
 }
 
-refreshBookings();
+function getNextStatus(el) {
+  if (el.classList.contains('free')) return 'booked';
+  if (el.classList.contains('booked')) return 'seated';
+  if (el.classList.contains('seated')) return 'finished';
+  return 'free';
+}
+
+document.getElementById('toggleClose').addEventListener('click', async () => {
+  const date = document.getElementById('dateSelect').value;
+  const closing = !closedDates.includes(date);
+  const reason = document.getElementById('closureReason').value || '';
+  await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: closing ? 'closeDay' : 'openDay', date, reason })
+  });
+  loadTableStatuses();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('dateSelect').value = new Date().toISOString().split('T')[0];
+  createTables();
+  loadTableStatuses();
+  setInterval(loadTableStatuses, 60000);
+});
 </script>
-</body>
-</html>
