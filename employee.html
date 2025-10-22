@@ -1,247 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bar918 Table Booking</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #faf9f6;
-      color: #012C4E;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
-    h1 {
-      color: #012C4E;
-      margin-bottom: 20px;
-      font-size: 2rem;
-    }
-    .layout {
-      display: flex;
-      justify-content: center;
-      align-items: start;
-      gap: 60px;
-      flex-wrap: wrap;
-      margin-bottom: 30px;
-    }
-    .divider {
-      height: 360px;
-      width: 6px;
-      background-color: #5C2C06;
-      border-radius: 3px;
-      align-self: center;
-    }
-    .section {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      justify-items: center;
-    }
-    .snug {
-      display: flex;
-      justify-content: center;
-      margin-top: 30px;
-      gap: 24px;
-    }
-    .table-btn {
-      background-color: #EAD292;
-      border: none;
-      padding: 18px 0;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.25s ease;
-      width: 100px;
-      height: 70px;
-      font-size: 15px;
-      line-height: 1.2;
-    }
-    .table-btn small {
-      display: block;
-      font-weight: normal;
-      font-size: 12px;
-    }
-    .table-btn:hover { background-color: #d7b968; }
-    .selected {
-      outline: 4px solid #012C4E;
-      background-color: #cbb471;
-    }
-    .booked {
-      background-color: #b5b5b5;
-      cursor: not-allowed;
-      opacity: 0.75;
-    }
-    form {
-      background: white;
-      border-radius: 14px;
-      padding: 25px;
-      max-width: 600px;
-      margin: 0 auto;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      text-align: left;
-    }
-    form label {
-      font-weight: 600;
-      display: block;
-      margin-top: 10px;
-      margin-bottom: 4px;
-    }
-    input, select, textarea, button {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0 12px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 15px;
-    }
-    button {
-      background-color: #012C4E;
-      color: white;
-      cursor: pointer;
-      border: none;
-      transition: background 0.3s ease;
-      font-size: 16px;
-      font-weight: 600;
-      padding: 12px;
-      margin-top: 5px;
-    }
-    button:hover { background-color: #021a33; }
-  </style>
-</head>
-<body>
-  <h1>Book a Table</h1>
+function doGet(e) {
+  const ss = SpreadsheetApp.openById('1-FSwF_skvrpnzhH3KJoqEuuYC5BHZzSJF-yyqJt5kfc');
+  const sheet = ss.getSheetByName('Bookings');
+  const date = e.parameter.date;
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const bookings = data.filter(row => row[headers.indexOf('Date')] === date)
+    .map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
 
-  <div class="layout">
-    <!-- LEFT SECTION -->
-    <div class="section" id="left-section">
-      <button class="table-btn" data-table="7" data-seats="4">7<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="8" data-seats="4">8<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="9" data-seats="4">9<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="10" data-seats="4">10<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="11" data-seats="4">11<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="12" data-seats="4">12<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="13" data-seats="4">13<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="14" data-seats="6">14<br><small>6 seats</small></button>
-      <button class="table-btn" data-table="15" data-seats="4">15<br><small>4 seats</small></button>
-    </div>
+  return ContentService
+    .createTextOutput(JSON.stringify(bookings))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
-    <div class="divider"></div>
+function doPost(e) {
+  const ss = SpreadsheetApp.openById('1-FSwF_skvrpnzhH3KJoqEuuYC5BHZzSJF-yyqJt5kfc');
+  const sheet = ss.getSheetByName('Bookings');
+  const closedSheet = ss.getSheetByName('ClosedDates');
+  const settings = ss.getSheetByName('Settings');
+  const data = JSON.parse(e.postData.contents);
 
-    <!-- RIGHT SECTION -->
-    <div class="section" id="right-section">
-      <button class="table-btn" data-table="1" data-seats="4">1<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="2" data-seats="6">2<br><small>6 seats</small></button>
-      <button class="table-btn" data-table="3" data-seats="4">3<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="4" data-seats="4">4<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="5" data-seats="4">5<br><small>4 seats</small></button>
-      <button class="table-btn" data-table="6" data-seats="6">6<br><small>6 seats</small></button>
-    </div>
-  </div>
+  // Handle status update
+  if (data.updateStatus) {
+    const range = sheet.getDataRange().getValues();
+    const headers = range.shift();
+    const dateCol = headers.indexOf('Date');
+    const tableCol = headers.indexOf('Table');
+    const statusCol = headers.indexOf('Status');
 
-  <!-- SNUG TABLES -->
-  <div class="snug">
-    <button class="table-btn" data-table="S1" data-seats="2">Snug 1<br><small>2 seats</small></button>
-    <button class="table-btn" data-table="S2" data-seats="2">Snug 2<br><small>2 seats</small></button>
-    <button class="table-btn" data-table="S3" data-seats="2">Snug 3<br><small>2 seats</small></button>
-  </div>
-
-  <form id="bookingForm">
-    <input type="hidden" id="selectedTable" name="table" required />
-
-    <label>Name</label>
-    <input type="text" id="name" required />
-
-    <label>Email</label>
-    <input type="email" id="email" required />
-
-    <label>Phone Number</label>
-    <input type="tel" id="phone" required />
-
-    <label>Date</label>
-    <input type="date" id="date" required />
-
-    <label>Time</label>
-    <input type="time" id="time" required min="10:00" max="20:00" />
-
-    <label>Baby Seat?</label>
-    <select id="babySeat">
-      <option value="No">No</option>
-      <option value="Yes">Yes</option>
-    </select>
-
-    <label>Special Requests</label>
-    <textarea id="specialRequests" rows="3"></textarea>
-
-    <button type="submit">Submit Booking</button>
-  </form>
-
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <script>
-    (function() { emailjs.init('aypCqsVVHRqzqReCk'); })();
-    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
-    let selectedTable = null;
-
-    // Handle table selection
-    document.querySelectorAll('.table-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.classList.contains('booked')) return;
-        document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedTable = btn.dataset.table;
-        document.getElementById('selectedTable').value = selectedTable;
-      });
-    });
-
-    // Handle booking submission
-    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!selectedTable) return alert('Please select a table first.');
-
-      const booking = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-        table: selectedTable,
-        seats: document.querySelector(`.table-btn[data-table="${selectedTable}"]`).dataset.seats,
-        babySeat: document.getElementById('babySeat').value,
-        specialRequests: document.getElementById('specialRequests').value,
-        date: document.getElementById('date').value,
-        time: document.getElementById('time').value
-      };
-
-      console.log('Sending booking data to EmailJS:', booking);
-
-      try {
-        await fetch(WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(booking)
-        });
-
-        await emailjs.send('Service_Reservations', 'Table_Template', {
-          name: booking.name,
-          table: booking.table,
-          seats: booking.seats,
-          date: booking.date,
-          time: booking.time,
-          babySeat: booking.babySeat,
-          specialRequests: booking.specialRequests,
-          phone: booking.phone,
-          email: booking.email
-        });
-
-        alert('✅ Your booking has been confirmed! A confirmation email has been sent.');
-        document.getElementById('bookingForm').reset();
-        document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
-        selectedTable = null;
-      } catch (err) {
-        console.error(err);
-        alert('❌ Error submitting booking. Please try again later.');
+    for (let i = 0; i < range.length; i++) {
+      if (range[i][dateCol] === data.date && range[i][tableCol] === data.table) {
+        sheet.getRange(i + 2, statusCol + 1).setValue(data.status);
+        break;
       }
-    });
-  </script>
-</body>
-</html>
+    }
+    return ContentService.createTextOutput('Status updated');
+  }
+
+  const booking = [
+    data.name,
+    data.email,
+    data.phone,
+    data.table,
+    data.seats,
+    data.babySeat,
+    data.specialRequests,
+    data.date,
+    data.time,
+    'Booked'
+  ];
+
+  sheet.appendRow(booking);
+  return ContentService.createTextOutput('Booking saved');
+}
