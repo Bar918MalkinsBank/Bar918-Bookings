@@ -272,26 +272,20 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
       return;
     }
 
-  emailjs.send("Service_Reservations", "Table_Template", {
-  name: document.getElementById("name").value,
-  email: document.getElementById("email").value,
-  phone: document.getElementById("phone").value,
-  date: document.getElementById("date").value,
-  time: document.getElementById("time").value,
-  table: document.getElementById("table").value,
-  seats: document.getElementById("seats").value,
-  specialRequests: document.getElementById("specialRequests").value,
-  to_email: document.getElementById("email").value,   // 👈 This ensures it sends to the customer
-  reply_to: "bar918malkinsbank@gmail.com"             // 👈 Optional: your bar email for replies
-}, "aypCqsVVHRqzqReCk")
-.then(() => {
-  console.log("✅ Email sent successfully!");
-})
-.catch((error) => {
-  console.error("❌ EmailJS error:", error);
-});
+    // Send confirmation email to customer
+    await emailjs.send("Service_Reservations", "Table_Template", formData, "aypCqsVVHRqzqReCk");
 
+    // Send internal copy to restaurant
+    await emailjs.send("Service_Reservations", "Table_Template", {...formData, email: "bar918reservations@gmail.com"}, "aypCqsVVHRqzqReCk");
+
+    alert('Booking successful! Confirmation email sent.');
+    document.getElementById('bookingForm').reset();
+    document.querySelectorAll('.table').forEach(t => t.classList.remove('selected'));
+  } catch (err) {
+    console.error(err);
+    alert('Something went wrong. Please try again later.');
+  }
+});
 </script>
 </body>
 </html>
-
