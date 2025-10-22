@@ -273,7 +273,7 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
     }
 
     // Send confirmation email to customer
-    await emailjs.send("Service_Reservations", "Table_Template", formData, "aypCqsVVHRqzqReCk");
+    await emailjs.send("Service_Reservations", "Table_Template", {...formData, email: Email}, "aypCqsVVHRqzqReCk");
 
     // Send internal copy to restaurant
     await emailjs.send("Service_Reservations", "Table_Template", {...formData, email: "bar918reservations@gmail.com"}, "aypCqsVVHRqzqReCk");
@@ -289,3 +289,4 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
 </script>
 </body>
 </html>
+
