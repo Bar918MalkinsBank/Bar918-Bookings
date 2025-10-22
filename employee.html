@@ -1,107 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bar918 Employee Portal</title>
-  <style>
-    body { font-family: Poppins, sans-serif; background:#faf9f6; color:#012C4E; padding:20px; text-align:center; }
-    table { width:95%; margin:auto; border-collapse:collapse; background:white; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
-    th,td { padding:10px; border-bottom:1px solid #eee; text-align:left; }
-    th { background:#012C4E; color:white; }
-    select { border-radius:6px; padding:4px; }
-    button { background:#012C4E; color:white; border:none; border-radius:8px; padding:10px 16px; font-weight:bold; cursor:pointer; }
-    .layout { display:flex; justify-content:center; gap:60px; flex-wrap:wrap; margin-top:30px; }
-    .divider { height:360px; width:6px; background:#5C2C06; border-radius:3px; align-self:center; }
-    .section { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
-    .snug { display:flex; justify-content:center; gap:24px; margin-top:30px; }
-    .table-btn { width:100px; height:70px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; transition:0.2s; background:#EAD292; }
-    .booked { background:#FFB3B3; }
-    .seated { background:#B3C6FF; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bar918 Employee Portal</title>
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: transparent;
+    color: #012C4E;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h1 {
+    text-align: center;
+    color: #012C4E;
+    margin-bottom: 15px;
+  }
+
+  .portal-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.6);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(5px);
+  }
+
+  .calendar-section {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  input[type="date"] {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+  }
+
+  .table-layout {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-top: 20px;
+  }
+
+  .divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    background: #4B2E05;
+    border-radius: 2px;
+    transform: translateX(-50%);
+  }
+
+  .left-section, .right-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    flex: 1;
+    padding: 10px;
+  }
+
+  .snug-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+    gap: 20px;
+  }
+
+  .table {
+    background: #EAD292;
+    color: #012C4E;
+    border-radius: 10px;
+    padding: 15px 10px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+
+  .table:hover {
+    transform: scale(1.05);
+    border-color: #012C4E;
+  }
+
+  .table.booked { background: #EAD292; }
+  .table.seated { background: #ffd966; }
+  .table.finished { background: #bbb; }
+
+  .booking-list {
+    margin-top: 25px;
+  }
+
+  .booking-item {
+    background: rgba(255,255,255,0.85);
+    padding: 12px 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 5px solid #012C4E;
+  }
+
+  .booking-item h3 {
+    margin: 0;
+    color: #012C4E;
+  }
+
+  .booking-item small {
+    display: block;
+    color: #444;
+  }
+
+  button, select, input, textarea {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+  }
+
+  .new-booking {
+    margin-top: 30px;
+    background: rgba(255,255,255,0.75);
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  .new-booking h2 {
+    color: #012C4E;
+  }
+
+  button {
+    background: #012C4E;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    background: #EAD292;
+    color: #012C4E;
+  }
+
+  .closed-banner {
+    background: #8b0000;
+    color: white;
+    padding: 8px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: none;
+  }
+</style>
 </head>
 <body>
-  <h1>Bar918 Employee Portal</h1>
-  <input type="date" id="datePicker" />
-  <table>
-    <thead>
-      <tr><th>Table</th><th>Name</th><th>Time</th><th>Contact</th><th>Baby Seat</th><th>Requests</th><th>Status</th></tr>
-    </thead>
-    <tbody id="bookingsBody"><tr><td colspan="7">Loading...</td></tr></tbody>
-  </table>
-
-  <div class="layout">
-    <div class="section" id="left-section">
-      <button class="table-btn" data-table="7">7</button><button class="table-btn" data-table="8">8</button><button class="table-btn" data-table="9">9</button>
-      <button class="table-btn" data-table="10">10</button><button class="table-btn" data-table="11">11</button><button class="table-btn" data-table="12">12</button>
-      <button class="table-btn" data-table="13">13</button><button class="table-btn" data-table="14">14</button><button class="table-btn" data-table="15">15</button>
+  <div class="portal-container">
+    <h1>Employee Booking Portal</h1>
+    <div class="calendar-section">
+      <label for="dateSelect"><strong>View Bookings for:</strong></label>
+      <input type="date" id="dateSelect">
+      <button id="refresh">Refresh</button>
     </div>
-    <div class="divider"></div>
-    <div class="section" id="right-section">
-      <button class="table-btn" data-table="1">1</button><button class="table-btn" data-table="2">2</button><button class="table-btn" data-table="3">3</button>
-      <button class="table-btn" data-table="4">4</button><button class="table-btn" data-table="5">5</button><button class="table-btn" data-table="6">6</button>
+
+    <div class="closed-banner" id="closedBanner">⚠️ This date is marked as closed — no bookings allowed.</div>
+
+    <div id="bookingList" class="booking-list"></div>
+
+    <div class="table-layout">
+      <div class="left-section" id="leftTables"></div>
+      <div class="divider"></div>
+      <div class="right-section" id="rightTables"></div>
+    </div>
+
+    <div class="snug-section" id="snugTables"></div>
+
+    <div class="new-booking">
+      <h2>Add New Booking</h2>
+      <form id="newBookingForm">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="tel" id="phone" placeholder="Phone" required>
+        <input type="date" id="date" required>
+        <input type="time" id="time" required>
+        <input type="number" id="seats" placeholder="Seats" required>
+        <select id="babySeat">
+          <option value="No">Baby Seat: No</option>
+          <option value="Yes">Baby Seat: Yes</option>
+        </select>
+        <textarea id="specialRequests" placeholder="Special Requests"></textarea>
+        <input type="text" id="table" placeholder="Table Number" required>
+        <button type="submit">Add Booking</button>
+      </form>
     </div>
   </div>
-  <div class="snug">
-    <button class="table-btn" data-table="S1">Snug 1</button><button class="table-btn" data-table="S2">Snug 2</button><button class="table-btn" data-table="S3">Snug 3</button>
-  </div>
 
-  <script>
-    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
-    const datePicker = document.getElementById('datePicker');
-    const bookingsBody = document.getElementById('bookingsBody');
-    datePicker.valueAsDate = new Date();
+<script>
+const APP_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
 
-    async function fetchBookings() {
-      const res = await fetch(`${WEBHOOK_URL}?date=${datePicker.value}`);
-      const data = await res.json();
-      bookingsBody.innerHTML = '';
-      const tables = document.querySelectorAll('.table-btn');
-      tables.forEach(t => t.className = 'table-btn');
+// Initialize date picker to today
+document.getElementById('dateSelect').valueAsDate = new Date();
 
-      if (!data || !data.length) {
-        bookingsBody.innerHTML = '<tr><td colspan="7">No bookings today</td></tr>';
-        return;
-      }
+async function fetchBookings(date) {
+  try {
+    const res = await fetch(`${APP_URL}?date=${date}`);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('Error fetching bookings:', err);
+    return [];
+  }
+}
 
-      data.forEach(b => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${b.table}</td>
-          <td>${b.name}</td>
-          <td>${b.time}</td>
-          <td>${b.phone}<br>${b.email}</td>
-          <td>${b.babySeat}</td>
-          <td>${b.specialRequests || ''}</td>
-          <td>
-            <select class="status" data-table="${b.table}">
-              <option value="Booked" ${b.status === 'Booked' ? 'selected' : ''}>Booked</option>
-              <option value="Seated" ${b.status === 'Seated' ? 'selected' : ''}>Seated</option>
-              <option value="Finished" ${b.status === 'Finished' ? 'selected' : ''}>Finished</option>
-            </select>
-          </td>`;
-        bookingsBody.appendChild(row);
+async function renderBookings() {
+  const date = document.getElementById('dateSelect').value;
+  const bookingList = document.getElementById('bookingList');
+  bookingList.innerHTML = '<p>Loading bookings...</p>';
 
-        const btn = document.querySelector(`[data-table="${b.table}"]`);
-        if (btn) btn.classList.add(b.status.toLowerCase());
-      });
-    }
+  const data = await fetchBookings(date);
+  bookingList.innerHTML = '';
 
-    document.addEventListener('change', async (e) => {
-      if (e.target.classList.contains('status')) {
-        const status = e.target.value;
-        const table = e.target.dataset.table;
-        await fetch(WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ updateStatus: true, table, status, date: datePicker.value })
-        });
-        fetchBookings();
-      }
-    });
+  if (data.closed) {
+    document.getElementById('closedBanner').style.display = 'block';
+  } else {
+    document.getElementById('closedBanner').style.display = 'none';
+  }
 
-    datePicker.addEventListener('change', fetchBookings);
-    fetchBookings();
-  </script>
+  if (!data.bookings || data.bookings.length === 0) {
+    bookingList.innerHTML = '<p>No bookings for this date.</p>';
+    return;
+  }
+
+  data.bookings.forEach(b => {
+    const item = document.createElement('div');
+    item.className = 'booking-item';
+    item.innerHTML = `
+      <h3>${b.Name}</h3>
+      <small>Table ${b.Table} | ${b.Time} | ${b.Seats} seats</small>
+      <small>Baby Seat: ${b.BabySeat}</small>
+      <small>Status: ${b.Status}</small>
+      <button onclick="cycleStatus('${b.ID}', '${b.Status}')">Change Status</button>
+    `;
+    bookingList.appendChild(item);
+  });
+}
+
+// Cycle booking statuses
+async function cycleStatus(id, currentStatus) {
+  const newStatus = currentStatus === 'Booked' ? 'Seated' :
+                    currentStatus === 'Seated' ? 'Finished' : 'Booked';
+
+  await fetch(APP_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify({action: 'updateStatus', id, status: newStatus})
+  });
+  renderBookings();
+}
+
+// Add new booking
+document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = {
+    name: document.getElementById('name').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+    date: document.getElementById('date').value,
+    time: document.getElementById('time').value,
+    seats: document.getElementById('seats').value,
+    babySeat: document.getElementById('babySeat').value,
+    specialRequests: document.getElementById('specialRequests').value,
+    table: document.getElementById('table').value
+  };
+
+  await fetch(APP_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(formData)
+  });
+  alert('New booking added!');
+  renderBookings();
+});
+
+document.getElementById('refresh').addEventListener('click', renderBookings);
+
+renderBookings();
+</script>
 </body>
 </html>
