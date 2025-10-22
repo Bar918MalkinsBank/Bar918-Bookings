@@ -1,54 +1,227 @@
-function doGet(e) {
-  const ss = SpreadsheetApp.openById('1-FSwF_skvrpnzhH3KJoqEuuYC5BHZzSJF-yyqJt5kfc');
-  const sheet = ss.getSheetByName('Bookings');
-  const date = e.parameter.date;
-  const data = sheet.getDataRange().getValues();
-  const headers = data.shift();
-  const bookings = data.filter(row => row[headers.indexOf('Date')] === date)
-    .map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
-
-  return ContentService
-    .createTextOutput(JSON.stringify(bookings))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function doPost(e) {
-  const ss = SpreadsheetApp.openById('1-FSwF_skvrpnzhH3KJoqEuuYC5BHZzSJF-yyqJt5kfc');
-  const sheet = ss.getSheetByName('Bookings');
-  const closedSheet = ss.getSheetByName('ClosedDates');
-  const settings = ss.getSheetByName('Settings');
-  const data = JSON.parse(e.postData.contents);
-
-  // Handle status update
-  if (data.updateStatus) {
-    const range = sheet.getDataRange().getValues();
-    const headers = range.shift();
-    const dateCol = headers.indexOf('Date');
-    const tableCol = headers.indexOf('Table');
-    const statusCol = headers.indexOf('Status');
-
-    for (let i = 0; i < range.length; i++) {
-      if (range[i][dateCol] === data.date && range[i][tableCol] === data.table) {
-        sheet.getRange(i + 2, statusCol + 1).setValue(data.status);
-        break;
-      }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bar918 Employee Portal</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #faf9f6;
+      color: #012C4E;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
     }
-    return ContentService.createTextOutput('Status updated');
-  }
+    h1 {
+      color: #012C4E;
+      margin-bottom: 20px;
+    }
+    #dateSelector {
+      padding: 8px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    #calendar {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 95%;
+      max-width: 1000px;
+      margin: 0 auto 30px auto;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    th {
+      background-color: #012C4E;
+      color: white;
+    }
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+    select.status {
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      background-color: #012C4E;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #021a33;
+    }
+    .divider {
+      height: 360px;
+      width: 6px;
+      background-color: #5C2C06;
+      border-radius: 3px;
+      align-self: center;
+    }
+    .layout {
+      display: flex;
+      justify-content: center;
+      align-items: start;
+      gap: 60px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+    .section {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      justify-items: center;
+    }
+    .snug {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+      gap: 24px;
+    }
+    .table-btn {
+      background-color: #EAD292;
+      border: none;
+      padding: 18px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.25s ease;
+      width: 100px;
+      height: 70px;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+    .occupied { background-color: #FFB3B3; }
+    .cooldown { background-color: #B3C6FF; }
+    .closed { background-color: #999; }
+  </style>
+</head>
+<body>
+  <h1>Employee Booking Management</h1>
 
-  const booking = [
-    data.name,
-    data.email,
-    data.phone,
-    data.table,
-    data.seats,
-    data.babySeat,
-    data.specialRequests,
-    data.date,
-    data.time,
-    'Booked'
-  ];
+  <input type="date" id="dateSelector" />
 
-  sheet.appendRow(booking);
-  return ContentService.createTextOutput('Booking saved');
-}
+  <div id="calendar"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Table</th>
+        <th>Name</th>
+        <th>Time</th>
+        <th>Contact</th>
+        <th>Baby Seat</th>
+        <th>Requests</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="bookingTableBody">
+      <tr><td colspan="7">Loading bookings...</td></tr>
+    </tbody>
+  </table>
+
+  <div class="layout">
+    <div class="section" id="left-section">
+      <button class="table-btn" data-table="7">7</button>
+      <button class="table-btn" data-table="8">8</button>
+      <button class="table-btn" data-table="9">9</button>
+      <button class="table-btn" data-table="10">10</button>
+      <button class="table-btn" data-table="11">11</button>
+      <button class="table-btn" data-table="12">12</button>
+      <button class="table-btn" data-table="13">13</button>
+      <button class="table-btn" data-table="14">14</button>
+      <button class="table-btn" data-table="15">15</button>
+    </div>
+    <div class="divider"></div>
+    <div class="section" id="right-section">
+      <button class="table-btn" data-table="1">1</button>
+      <button class="table-btn" data-table="2">2</button>
+      <button class="table-btn" data-table="3">3</button>
+      <button class="table-btn" data-table="4">4</button>
+      <button class="table-btn" data-table="5">5</button>
+      <button class="table-btn" data-table="6">6</button>
+    </div>
+  </div>
+
+  <div class="snug">
+    <button class="table-btn" data-table="S1">Snug 1</button>
+    <button class="table-btn" data-table="S2">Snug 2</button>
+    <button class="table-btn" data-table="S3">Snug 3</button>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
+    const dateSelector = document.getElementById('dateSelector');
+    const bookingTableBody = document.getElementById('bookingTableBody');
+
+    dateSelector.valueAsDate = new Date();
+
+    async function fetchBookings() {
+      const selectedDate = dateSelector.value;
+      const response = await fetch(`${WEBHOOK_URL}?date=${selectedDate}`);
+      const data = await response.json();
+
+      bookingTableBody.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        bookingTableBody.innerHTML = '<tr><td colspan="7">No bookings for this day.</td></tr>';
+        return;
+      }
+
+      data.forEach(b => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${b.table}</td>
+          <td>${b.name}</td>
+          <td>${b.time}</td>
+          <td>${b.phone}<br>${b.email}</td>
+          <td>${b.babySeat}</td>
+          <td>${b.specialRequests || ''}</td>
+          <td>
+            <select class="status" data-table="${b.table}">
+              <option value="Booked" ${b.status === 'Booked' ? 'selected' : ''}>Booked</option>
+              <option value="Seated" ${b.status === 'Seated' ? 'selected' : ''}>Seated</option>
+              <option value="Finished" ${b.status === 'Finished' ? 'selected' : ''}>Finished</option>
+            </select>
+          </td>
+        `;
+        bookingTableBody.appendChild(row);
+      });
+    }
+
+    dateSelector.addEventListener('change', fetchBookings);
+
+    document.addEventListener('change', async (e) => {
+      if (e.target.classList.contains('status')) {
+        const status = e.target.value;
+        const table = e.target.dataset.table;
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ updateStatus: true, table, status, date: dateSelector.value })
+        });
+        fetchBookings();
+      }
+    });
+
+    fetchBookings();
+  </script>
+</body>
+</html>
