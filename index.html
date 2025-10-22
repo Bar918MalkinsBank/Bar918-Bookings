@@ -285,16 +285,16 @@ async function refreshAvailability(){
 async function sendEmails(booking){
   // Template must accept the keys used here
   await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
-    customer_name: booking.name,
-    customer_email: booking.email,
-    booking_date: booking.date,
-    booking_time: booking.time.split('T')[1]?.slice(0,5) || '',
-    table: booking.table,
-    party_size: booking.guests,
-    baby_seat: booking.babySeat,
-    special_requests: booking.notes,
-    restaurant_email: 'bar918@yourrestaurant.com'
-  });
+  name: booking.name,
+  table: booking.table,
+  seats: booking.seats,
+  date: booking.date,
+  time: booking.time,
+  babySeat: booking.babySeat,
+  specialRequests: booking.specialRequests,
+  phone: booking.phone,
+  email: booking.email
+ });
 }
 
 /* Submit booking */
@@ -356,3 +356,4 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 </body>
 </html>
+
