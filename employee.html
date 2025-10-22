@@ -1,10 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Bar918 — Employee Portal</title>
 <style>
-:root{--blue:#012C4E;--gold:#EAD292;--mah:#4B1E0E;--bg:#071223;--muted:#9fb0bf}
+:root{
+  --blue:#012C4E; --gold:#EAD292; --mah:#4B2E05; --bg:#071223; --muted:#9fb0bf;
+  --free:#2ecc71; --booked:#f2c94c; --seated:#2196f3; --finished:#ef4444; --blocked:#6b7280;
+}
+*{box-sizing:border-box}
 body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--gold)}
 .container{max-width:1200px;margin:18px auto;padding:18px}
 .header{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -20,109 +25,114 @@ input[type=date],input[type=text],button,select{padding:8px;border-radius:8px;bo
 .card{border-radius:10px;padding:10px;text-align:center;font-weight:800;cursor:pointer;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .card.small{min-height:56px}
 .card.large{min-height:76px}
-.card.free{background:#2ecc71;color:#012C4E}
-.card.booked{background:#f2c94c;color:#012C4E}
-.card.seated{background:#2196f3;color:#fff}
-.card.finished{background:#ef4444;color:#fff}
-.card.blocked{background:#6b7280;color:#fff}
-.controls-legend{display:flex;gap:12px;align-items:center;margin-top:12px}
-.booking-table{width:100%;border-collapse:collapse;margin-top:14px}
-.booking-table th, .booking-table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;color:var(--gold)}
+.card.free{background:var(--free);color:var(--blue)}
+.card.booked{background:var(--booked);color:var(--blue)}
+.card.seated{background:var(--seated);color:#fff}
+.card.finished{background:var(--finished);color:#fff}
+.card.blocked{background:var(--blocked);color:#fff}
+.meta{font-size:13px;color:rgba(255,255,255,0.85);margin-top:6px}
 .panel{margin-top:14px;background:rgba(255,255,255,0.02);padding:12px;border-radius:8px}
+.booking-table{width:100%;border-collapse:collapse;margin-top:12px}
+.booking-table th, .booking-table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;color:var(--gold);text-align:left}
 .small-btn{padding:6px 8px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--gold);cursor:pointer}
-@media(max-width:900px){.floor{grid-template-columns:1fr}.mah{display:none}.grid-left,.grid-right{grid-template-columns:repeat(2,1fr)}.snug-row{justify-content:flex-start}}
+.modal-backdrop{display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:999}
+.modal{background:#071223;padding:18px;border-radius:10px;max-width:720px;width:94%;color:var(--gold)}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:900px){.floor{grid-template-columns:1fr}.mah{display:none}.grid-left,.grid-right{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <div>
-      <div class="title">Bar918 — Employee Portal</div>
-      <div style="font-size:13px;color:var(--muted)">Calendar & live floor map — click a table for actions</div>
-    </div>
-
-    <div class="controls">
-      <label style="font-size:13px;color:var(--muted)">Date</label>
-      <input id="date" type="date">
-      <input id="reason" type="text" placeholder="Closure reason (optional)">
-      <button id="toggleClose" class="btn">Disable Bookings</button>
-      <button id="refresh" class="btn">Refresh</button>
-    </div>
-  </div>
-
-  <!-- Bookings list (calendar) -->
-  <div class="panel" style="margin-top:14px">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div style="font-weight:800">Bookings for <span id="dayLabel"></span></div>
+  <div class="container">
+    <div class="header">
       <div>
-        <button id="addBookingBtn" class="small-btn">+ New Booking</button>
+        <div class="title">Bar918 — Employee Portal</div>
+        <div style="font-size:13px;color:var(--muted)">Calendar & live floor map — click a table for actions</div>
+      </div>
+
+      <div class="controls">
+        <label style="font-size:13px;color:var(--muted)">Date</label>
+        <input id="date" type="date">
+        <input id="reason" type="text" placeholder="Closure reason (optional)">
+        <button id="toggleClose" class="btn">Disable Bookings</button>
+        <button id="refresh" class="btn">Refresh</button>
       </div>
     </div>
 
-    <table class="booking-table" id="bookingTable" style="margin-top:12px">
-      <thead>
-        <tr>
-          <th>Name</th><th>Table</th><th>Time</th><th>Seats</th><th>BabySeat</th><th>SpecialRequests</th><th>Contact</th><th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="bookingTbody"><tr><td colspan="8" style="color:var(--muted)">Loading…</td></tr></tbody>
-    </table>
+    <!-- Bookings list (calendar) -->
+    <div class="panel">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:800">Bookings for <span id="dayLabel"></span></div>
+        <div>
+          <button id="addBookingBtn" class="small-btn">+ New Booking</button>
+        </div>
+      </div>
+
+      <table class="booking-table" id="bookingTable">
+        <thead>
+          <tr>
+            <th>Name</th><th>Table</th><th>Time</th><th>Seats</th><th>BabySeat</th><th>SpecialRequests</th><th>Contact</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="bookingTbody"><tr><td colspan="8" style="color:var(--muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="floor">
+      <div class="section">
+        <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Left side</div>
+        <div class="grid-left" id="leftGrid"></div>
+        <div class="snug-row" id="snugRow"></div>
+      </div>
+
+      <div><div class="mah" aria-hidden="true"></div></div>
+
+      <div class="section">
+        <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Right side</div>
+        <div class="grid-right" id="rightGrid"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#2ecc71;display:inline-block;border-radius:3px"></span> Free</div>
+        <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#f2c94c;display:inline-block;border-radius:3px"></span> Booked</div>
+        <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#2196f3;display:inline-block;border-radius:3px"></span> Seated</div>
+        <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#ef4444;display:inline-block;border-radius:3px"></span> Finished</div>
+        <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#6b7280;display:inline-block;border-radius:3px"></span> Blocked</div>
+      </div>
+    </div>
   </div>
 
-  <div class="floor">
-    <div class="section">
-      <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Left side</div>
-      <div class="grid-left" id="leftGrid"></div>
-      <div class="snug-row" id="snugRow"></div>
-    </div>
-
-    <div><div class="mah" aria-hidden="true"></div></div>
-
-    <div class="section">
-      <div style="font-weight:800;color:var(--gold);margin-bottom:8px">Right side</div>
-      <div class="grid-right" id="rightGrid"></div>
-    </div>
-  </div>
-
-  <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
-    <div class="controls-legend">
-      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#2ecc71;display:inline-block;border-radius:3px"></span> Free</div>
-      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#f2c94c;display:inline-block;border-radius:3px"></span> Booked</div>
-      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#2196f3;display:inline-block;border-radius:3px"></span> Seated</div>
-      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#ef4444;display:inline-block;border-radius:3px"></span> Finished</div>
-      <div style="display:flex;gap:6px;align-items:center"><span style="width:18px;height:12px;background:#6b7280;display:inline-block;border-radius:3px"></span> Blocked</div>
-    </div>
-  </div>
-</div>
-
-<!-- Add booking modal (simple) -->
-<div id="modal" style="display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);align-items:center;justify-content:center">
-  <div style="background:#071223;padding:18px;border-radius:10px;max-width:720px;width:94%;color:var(--gold)">
-    <h3 style="margin-top:0">Add booking</h3>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-      <input id="m_name" placeholder="Name">
-      <input id="m_email" placeholder="Email">
-      <input id="m_phone" placeholder="Phone">
-      <select id="m_table"></select>
-      <select id="m_seats"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
-      <select id="m_baby"><option>No</option><option>Yes</option></select>
-      <input id="m_date" type="date">
-      <input id="m_time" type="time">
-      <input id="m_source" value="Employee" disabled>
-    </div>
-    <div style="margin-top:12px">
-      <textarea id="m_notes" placeholder="Special requests" style="width:100%;min-height:80px;border-radius:8px;padding:8px"></textarea>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-      <button id="m_cancel" class="small-btn">Cancel</button>
-      <button id="m_save" class="btn">Save booking</button>
+  <!-- Modal for new booking -->
+  <div id="modal" class="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3 style="margin-top:0">Add booking</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <input id="m_name" placeholder="Name">
+        <input id="m_email" placeholder="Email">
+        <input id="m_phone" placeholder="Phone">
+        <select id="m_table"></select>
+        <select id="m_seats"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+        <select id="m_baby"><option>No</option><option>Yes</option></select>
+        <input id="m_date" type="date">
+        <input id="m_time" type="time">
+        <input id="m_source" value="Employee" disabled>
+      </div>
+      <div style="margin-top:12px">
+        <textarea id="m_notes" placeholder="Special requests" style="width:100%;min-height:80px;border-radius:8px;padding:8px"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button id="m_cancel" class="small-btn">Cancel</button>
+        <button id="m_save" class="btn">Save booking</button>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-/* CONFIG */
+/* CONFIG - use your webhook */
 const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
+
+/* Table definitions (keeps seat counts & layout) */
 const LEFT_TABLES = [
   { number: 7, seats: 6 }, { number: 8, seats: 4 }, { number: 9, seats: 4 },
   { number: 10, seats: 4 }, { number: 11, seats: 4 }, { number: 12, seats: 4 },
@@ -134,6 +144,7 @@ const RIGHT_TABLES = [
 ];
 const SNUGS = [{number:'S1',seats:2},{number:'S2',seats:2},{number:'S3',seats:2}];
 
+/* DOM refs */
 const dateEl = document.getElementById('date');
 const dayLabel = document.getElementById('dayLabel');
 const leftGrid = document.getElementById('leftGrid');
@@ -144,11 +155,13 @@ const refreshBtn = document.getElementById('refresh');
 const toggleCloseBtn = document.getElementById('toggleClose');
 const reasonInput = document.getElementById('reason');
 const addBookingBtn = document.getElementById('addBookingBtn');
+const modal = document.getElementById('modal');
 
+/* init date -> today */
 dateEl.value = new Date().toISOString().split('T')[0];
 dayLabel.textContent = dateEl.value;
 
-/* Build map cards */
+/* build floor map cards */
 function mkCard(t){
   const el = document.createElement('div');
   el.className = 'card ' + (t.seats===2?'small':t.seats===6?'large':'medium') + ' free';
@@ -163,34 +176,35 @@ function buildMap(){
   RIGHT_TABLES.forEach(t => rightGrid.appendChild(mkCard(t)));
 }
 
-/* Load bookings for date, closedDates, settings */
+/* loadData: bookings + closedDates + settings */
 async function loadData(){
   const date = dateEl.value;
   dayLabel.textContent = date;
   bookingTbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted)">Loading…</td></tr>';
 
-  // reset map
+  // reset map to free
   document.querySelectorAll('.card').forEach(c=>{
     const size = c.classList.contains('large') ? 'large' : c.classList.contains('small') ? 'small' : 'medium';
     c.className = `card ${size} free`;
-    const guest = c.querySelector('.guest'); if(guest) guest.remove();
+    const g = c.querySelector('.guest'); if(g) g.remove();
   });
 
   try{
     // bookings
     const r = await fetch(WEBHOOK + '?action=getBookings&date=' + encodeURIComponent(date));
-    const txt = await r.text();
-    const json = JSON.parse(txt);
+    const txt = await r.text(); const json = JSON.parse(txt);
     const bookings = json.bookings || [];
 
-    // closedDates + settings
+    // getAll (closedDates) and settings
     const r2 = await fetch(WEBHOOK + '?action=getAll&date=' + encodeURIComponent(date));
     const j2 = JSON.parse(await r2.text());
     const closedDates = j2.closedDates || [];
-    const settingsRes = await fetch(WEBHOOK + '?action=getSettings'); const sjson = JSON.parse(await settingsRes.text());
-    const settings = sjson.settings || [];
 
-    // if closed date
+    const r3 = await fetch(WEBHOOK + '?action=getSettings');
+    const j3 = JSON.parse(await r3.text());
+    const settings = j3.settings || [];
+
+    // closed?
     const closedToday = closedDates.find(c=>c.date === date);
     if(closedToday){
       document.querySelectorAll('.card').forEach(c=>{
@@ -206,7 +220,7 @@ async function loadData(){
       reasonInput.value = '';
     }
 
-    // apply blocked settings
+    // apply settings (blocked tables)
     (settings || []).forEach(s=>{
       if(String(s.TableNumber)){
         const el = document.querySelector('.card[data-table="'+String(s.TableNumber)+'"]');
@@ -214,68 +228,70 @@ async function loadData(){
       }
     });
 
-    // fill booking table
+    // display bookings list and annotate map
     if(bookings.length === 0) bookingTbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted)">No bookings for this date</td></tr>';
     else {
       bookingTbody.innerHTML = '';
       bookings.forEach(b=>{
-        // table card update
-        const key = String(b.table);
-        const el = document.querySelector('.card[data-table="'+key+'"]');
-        if(el){
-          const size = el.classList.contains('large')?'large':el.classList.contains('small')?'small':'medium';
-          el.className = `card ${size} ${ (b.status||'Booked').toLowerCase() }`;
-          // guest snippet
-          let guest = el.querySelector('.guest');
-          if(!guest){ guest = document.createElement('div'); guest.className='guest'; guest.style.marginTop='8px'; guest.style.fontSize='13px'; el.appendChild(guest); }
+        // map annotate
+        const tableKey = String(b.table || '');
+        let card = document.querySelector('.card[data-table="'+tableKey+'"]');
+        if(card){
+          const size = card.classList.contains('large') ? 'large' : card.classList.contains('small') ? 'small' : 'medium';
+          card.className = `card ${size} ${ (b.status||'Booked').toLowerCase() }`;
+          // add guest snippet
+          let guest = card.querySelector('.guest');
+          if(!guest){ guest = document.createElement('div'); guest.className='guest'; guest.style.marginTop='8px'; guest.style.fontSize='13px'; card.appendChild(guest); }
           guest.textContent = `${b.name} • ${(new Date(b.time)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
         }
+        // add to booking table
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${b.name||''}</td><td>${b.table||''}</td><td>${(new Date(b.time)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})||''}</td><td>${b.seats||''}</td><td>${b.babySeat||''}</td><td>${b.specialRequests||''}</td><td>${b.phone||''}</td><td>${b.status||'Booked'}</td>`;
         bookingTbody.appendChild(tr);
       });
     }
   }catch(err){
-    console.error('loadData err', err);
+    console.error('loadData err',err);
     bookingTbody.innerHTML = '<tr><td colspan="8" style="color:#f88">Error loading bookings</td></tr>';
   }
 }
 
-/* Card click opens a small action sheet using prompt (simple) */
+/* Card click => inline prompt for action */
 async function onCardClick(el){
-  // build options
-  const opts = ['Seated','Finished','Block/Unblock','Cancel'];
-  const choice = prompt(`Table ${el.dataset.table} — type: Seated / Finished / Block / Unblock (case-insensitive)`);
-  if(!choice) return;
-  const cmd = choice.trim().toLowerCase();
-  if(cmd === 'seated' || cmd === 'finish' || cmd === 'finished'){
-    const status = (cmd === 'seated') ? 'Seated' : 'Finished';
-    await updateStatus(el.dataset.table, status, dateEl.value);
+  const table = el.dataset.table;
+  const cmd = prompt(`Table ${table} — type: seated / finished / block / unblock (case-insensitive)`);
+  if(!cmd) return;
+  const c = cmd.trim().toLowerCase();
+  if(c === 'seated' || c === 'seize' || c === 'sit') {
+    await updateStatus(table, 'Seated', dateEl.value);
     await loadData();
-  } else if(cmd === 'block' || cmd === 'unblock' || cmd==='block/unblock' || cmd==='block/unblock'){
-    // toggle
-    const r = await fetch(WEBHOOK + '?action=getSettings'); const s = JSON.parse(await r.text());
-    const existing = (s.settings||[]).find(x=>String(x.TableNumber) === String(el.dataset.table));
-    const isBlocked = existing ? (String(existing.IsBlocked) === 'TRUE') : false;
-    const newBlocked = !isBlocked;
-    // call updateSetting
-    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'setBlock', table: el.dataset.table, block: newBlocked })});
+  } else if(c === 'finished' || c === 'finish') {
+    await updateStatus(table, 'Finished', dateEl.value);
+    await loadData();
+  } else if(c === 'block' || c === 'unblock') {
+    // toggle block state
+    // fetch settings to see existing
+    const r = await fetch(WEBHOOK + '?action=getSettings');
+    const j = JSON.parse(await r.text());
+    const existing = (j.settings||[]).find(s=>String(s.TableNumber) === String(table));
+    const isBlocked = existing ? String(existing.IsBlocked) === 'TRUE' : false;
+    const newBlocked = (c === 'block') ? true : (c === 'unblock' ? false : !isBlocked);
+    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'setBlock', table, block: newBlocked })});
     await loadData();
   } else {
-    // treat as Cancel/no-op
+    // no-op
   }
 }
 
-/* update status (POST) */
+/* updateStatus call */
 async function updateStatus(table, status, date){
-  await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'updateStatus', table, status, date }) });
+  await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'updateStatus', table, status, date })});
 }
 
-/* toggle close date */
+/* toggle close / open day */
 toggleCloseBtn.addEventListener('click', async ()=>{
   const date = dateEl.value;
   const reason = reasonInput.value || '';
-  // fetch closedDates
   const r = await fetch(WEBHOOK + '?action=getAll&date=' + encodeURIComponent(date));
   const j = JSON.parse(await r.text());
   const closedList = j.closedDates || [];
@@ -284,23 +300,19 @@ toggleCloseBtn.addEventListener('click', async ()=>{
     // open
     await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'openDay', date })});
   } else {
+    // close
     await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'closeDay', date, reason })});
   }
   await loadData();
 });
 
-/* New booking modal */
-const modal = document.getElementById('modal');
-const m_table = document.getElementById('m_table');
-addBookingBtn.addEventListener('click', async ()=>{
-  // populate table select with all tables
+/* Add booking modal logic */
+addBookingBtn.addEventListener('click', ()=>{
+  const m_table = document.getElementById('m_table');
   m_table.innerHTML = '';
-  [ ...LEFT_TABLES, ...RIGHT_TABLES, ...SNUGS ].forEach(t=>{
-    const opt = document.createElement('option');
-    opt.value = t.number; opt.textContent = `${t.number} (${t.seats} seats)`;
-    m_table.appendChild(opt);
+  [ ...LEFT_TABLES, ...RIGHT_TABLES, ...SNUGS].forEach(t=>{
+    const opt = document.createElement('option'); opt.value = t.number; opt.textContent = `${t.number} (${t.seats} seats)`; m_table.appendChild(opt);
   });
-  // default date
   document.getElementById('m_date').value = dateEl.value;
   modal.style.display = 'flex';
 });
@@ -319,33 +331,24 @@ document.getElementById('m_save').addEventListener('click', async ()=>{
     status: 'Booked',
     source: 'Employee'
   };
-  // POST to createBooking
-  const res = await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'createBooking', booking: b }) });
-  const txt = await res.text(); const j = JSON.parse(txt);
-  if(j.status === 'ok'){ modal.style.display='none'; await loadData(); alert('Booking added'); }
-  else alert('Failed: ' + (j.message || 'unknown'));
+  try{
+    const res = await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'createBooking', booking: b })});
+    const txt = await res.text(); const j = JSON.parse(txt);
+    if(j.status === 'ok'){ modal.style.display='none'; await loadData(); alert('Booking added'); }
+    else alert('Failed: ' + (j.message||'unknown'));
+  }catch(e){ console.error('save booking err', e); alert('Error saving booking'); }
 });
 
-/* simple GET settings action */
-async function getSettings(){ const r = await fetch(WEBHOOK + '?action=getSettings'); return JSON.parse(await r.text()); }
-
-/* wire events */
+/* wire refresh and date change */
 refreshBtn.addEventListener('click', ()=>loadData());
 dateEl.addEventListener('change', ()=>loadData());
 
-/* build & init */
-function init(){
+/* initial build & load */
+(function init(){
   buildMap();
   loadData();
   setInterval(loadData, 60000);
-}
-function buildMap(){
-  LEFT_TABLES.forEach(t => leftGrid.appendChild(mkCard(t)));
-  SNUGS.forEach(s => snugRow.appendChild(mkCard(s)));
-  RIGHT_TABLES.forEach(t => rightGrid.appendChild(mkCard(t)));
-}
-function mkCard(t){ const el=document.createElement('div'); el.className='card '+(t.seats===2?'small':t.seats===6?'large':'medium')+' free'; el.dataset.table=t.number; el.innerHTML=`<div>Table ${t.number}</div><div class="meta">${t.seats} seats</div>`; el.addEventListener('click', ()=>onCardClick(el)); return el; }
-init();
+})();
 </script>
 </body>
 </html>
