@@ -1,233 +1,91 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Bar918 — Employee Portal</title>
-<style>
-  :root{--blue:#012C4E;--gold:#EAD292;--mah:#4B2E05}
-  body{font-family:Inter,system-ui,Arial;background:transparent;color:var(--blue);margin:0;padding:18px}
-  .wrap{max-width:1100px;margin:0 auto;background:rgba(255,255,255,0.65);padding:18px;border-radius:12px;backdrop-filter:blur(6px)}
-  h1{margin:0 0 10px}
-  .top{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  input[type=date]{padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
-  .booking-list{margin-top:14px}
-  .booking-row{display:flex;gap:12px;align-items:center;padding:10px;background:#fff;border-radius:8px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
-  .booking-row > div{flex:1;min-width:80px}
-  .floor{display:flex;gap:20px;align-items:start;margin-top:16px;position:relative}
-  .divider{position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:6px;background:var(--mah);border-radius:3px}
-  .section{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .snug{display:flex;gap:10px;margin-top:12px}
-  .table{background:var(--gold);padding:12px;border-radius:10px;text-align:center;font-weight:800;cursor:pointer}
-  .table.blocked{background:#9e9e9e}
-  .table.booked{background:#f2c94c}
-  .table.seated{background:#2196f3;color:#fff}
-  .table.finished{background:#ef4444;color:#fff}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  button{background:var(--blue);color:var(--gold);border:0;padding:8px 10px;border-radius:8px;cursor:pointer}
-  .modal{display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center}
-  .modal .panel{background:rgba(255,255,255,0.95);padding:16px;border-radius:10px;max-width:680px;width:94%}
-  .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  @media(max-width:900px){.section{grid-template-columns:repeat(2,1fr)}.divider{display:none}}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Portal - Bar918</title>
 </head>
-<body>
-  <div class="wrap">
-    <h1>Bar918 — Employee Portal</h1>
+<body style="background:transparent;font-family:Arial;text-align:center;color:#fff;">
+<h2>Bar918 Employee Portal</h2>
+<p>View bookings, mark as seated/finished, and close off tables.</p>
 
-    <div class="top">
-      <div>
-        <label for="day">Date</label>
-        <input id="day" type="date">
-      </div>
-      <div class="controls">
-        <button id="refresh">Refresh</button>
-        <button id="addBtn">+ Add booking</button>
-        <button id="toggleClose">Toggle Close Day</button>
-      </div>
-    </div>
+<div>
+  <label>Select Date: </label>
+  <input type="date" id="dateSelect" />
+  <button onclick="loadBookings()">Load Bookings</button>
+</div>
 
-    <div id="closedBanner" style="display:none;margin-top:10px;padding:8px;background:#c62828;color:#fff;border-radius:8px">This day is CLOSED for bookings</div>
-
-    <div class="booking-list" id="bookingList" aria-live="polite"></div>
-
-    <div class="floor" style="margin-top:18px">
-      <div class="section" id="leftSection"></div>
-      <div class="divider" aria-hidden="true"></div>
-      <div class="section" id="rightSection"></div>
-    </div>
-
-    <div class="snug" id="snugSection"></div>
-  </div>
-
-  <!-- Modal -->
-  <div id="modal" class="modal" role="dialog" aria-modal="true">
-    <div class="panel">
-      <h3>Add booking</h3>
-      <div class="form-grid" style="margin-top:8px">
-        <input id="m_name" placeholder="Name">
-        <input id="m_email" placeholder="Email">
-        <input id="m_phone" placeholder="Phone">
-        <select id="m_table"></select>
-        <input id="m_date" type="date">
-        <input id="m_time" type="time">
-        <input id="m_guests" type="number" min="1" max="12" placeholder="Guests">
-        <select id="m_baby"><option>No</option><option>Yes</option></select>
-        <input id="m_dummy" style="display:none">
-      </div>
-      <textarea id="m_notes" placeholder="Notes" style="width:100%;margin-top:8px"></textarea>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
-        <button id="m_cancel">Cancel</button>
-        <button id="m_save">Save</button>
-      </div>
-    </div>
-  </div>
+<table border="1" style="margin:auto;margin-top:20px;width:90%;border-collapse:collapse;color:#fff;">
+  <thead>
+    <tr>
+      <th>Table</th>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Contact</th>
+      <th>Notes</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="bookingList"></tbody>
+</table>
 
 <script>
-/* CONFIG */
-const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
-const LEFT = [{id:7,seats:4},{id:8,seats:4},{id:9,seats:4},{id:10,seats:4},{id:11,seats:4},{id:12,seats:4},{id:13,seats:4},{id:14,seats:6},{id:15,seats:4}];
-const RIGHT = [{id:1,seats:4},{id:2,seats:6},{id:3,seats:4},{id:4,seats:4},{id:5,seats:4},{id:6,seats:6}];
-const SNUGS = [{id:'S1',seats:2},{id:'S2',seats:2},{id:'S3',seats:2}];
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec";
 
-/* build floor */
-function mkCard(t){
-  const el=document.createElement('div');
-  el.className='table';
-  el.dataset.table=t.id;
-  el.innerHTML = `${t.id}<div style="font-size:12px;font-weight:600;margin-top:6px">${t.seats} seats</div>`;
-  el.addEventListener('click', ()=>onTableClick(t.id));
-  return el;
-}
-function renderFloor(){
-  const left = document.getElementById('leftSection'); const right = document.getElementById('rightSection'); const snug = document.getElementById('snugSection');
-  left.innerHTML=''; right.innerHTML=''; snug.innerHTML='';
-  LEFT.forEach(t=>left.appendChild(mkCard(t)));
-  RIGHT.forEach(t=>right.appendChild(mkCard(t)));
-  SNUGS.forEach(s=>snug.appendChild(mkCard(s)));
-}
-renderFloor();
+async function loadBookings() {
+  const date = document.getElementById("dateSelect").value;
+  const tbody = document.getElementById("bookingList");
+  tbody.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
 
-/* date default to today */
-document.getElementById('day').valueAsDate = new Date();
-
-/* load bookings for day */
-async function loadDay(){
-  const day = document.getElementById('day').value;
-  document.getElementById('bookingList').innerHTML = 'Loading...';
   try {
-    const res = await fetch(WEBHOOK + '?action=getBookings&date=' + encodeURIComponent(day));
-    const json = await res.json();
-    // json: { bookings: [], closed: true/false }
-    const bookings = json.bookings || [];
-    const closed = json.closed || false;
-    document.getElementById('closedBanner').style.display = closed ? 'block' : 'none';
+    const response = await fetch(WEBHOOK_URL);
+    const data = await response.json();
+    const filtered = data.filter(row => row.Date === date);
 
-    const container = document.getElementById('bookingList'); container.innerHTML='';
-    if(bookings.length===0) container.innerHTML='<div style="padding:10px">No bookings for this date</div>';
-    bookings.forEach(b=>{
-      const row=document.createElement('div'); row.className='booking-row';
-      row.innerHTML = `<div style="min-width:120px"><strong>${b.Name}</strong><div style="font-size:12px;color:#333">${b.Date} ${b.Time}</div></div>
-                       <div>${b.Table}</div>
-                       <div>${b.Guests}</div>
-                       <div>${b.Contact||''}</div>
-                       <div style="flex:2">${b.Notes||''}</div>
-                       <div>
-                         <select data-id="${b._rowId}">
-                           <option ${b.Status==='Booked'?'selected':''}>Booked</option>
-                           <option ${b.Status==='Seated'?'selected':''}>Seated</option>
-                           <option ${b.Status==='Finished'?'selected':''}>Finished</option>
-                         </select>
-                       </div>`;
-      container.appendChild(row);
+    tbody.innerHTML = "";
+    if (filtered.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='8'>No bookings for this date.</td></tr>";
+      return;
+    }
+
+    filtered.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${row.Table}</td>
+        <td>${row.Name}</td>
+        <td>${row.Date}</td>
+        <td>${row.Time}</td>
+        <td>${row.Contact}</td>
+        <td>${row.Notes || ''}</td>
+        <td>${row.Status}</td>
+        <td>
+          <button onclick="updateStatus('${row.Table}','Seated')">Seated</button>
+          <button onclick="updateStatus('${row.Table}','Finished')">Finished</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
     });
-
-    // annotate floor
-    document.querySelectorAll('.table').forEach(t=>t.className='table');
-    bookings.forEach(b=>{
-      const el = document.querySelector(`.table[data-table="${b.Table}"]`);
-      if(!el) return;
-      const s = (b.Status||'Booked').toLowerCase();
-      el.classList.add(s==='booked'?'booked': s==='seated'?'seated': s==='finished'?'finished':'booked');
-    });
-
-  } catch(err){
-    console.error(err); document.getElementById('bookingList').innerHTML='Error loading bookings';
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = "<tr><td colspan='8'>Error loading bookings.</td></tr>";
   }
 }
 
-/* Table click - quick actions prompt */
-async function onTableClick(table){
-  const action = prompt(`Table ${table} — type: block / unblock / seated / finished (case-insensitive)`);
-  if(!action) return;
-  const cmd = action.trim().toLowerCase();
-  if(cmd === 'seated' || cmd === 'finished') {
-    // update status for booking that matches table+day (first match)
-    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'setStatusForTable', table, date: document.getElementById('day').value, status: cmd.charAt(0).toUpperCase() + cmd.slice(1) })});
-    await loadDay();
-  } else if(cmd === 'block' || cmd === 'unblock') {
-    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'setBlock', table, block: cmd==='block' })});
-    await loadDay();
-  }
-}
-
-/* status change listener (delegated) */
-document.addEventListener('change', async (e)=>{
-  if(!e.target.matches('select[data-id]')) return;
-  const rowId = e.target.dataset.id;
-  const newStatus = e.target.value;
-  await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'updateStatusByRow', rowId, status: newStatus })});
-  await loadDay();
-});
-
-/* modal add booking */
-const modal = document.getElementById('modal');
-document.getElementById('addBtn').addEventListener('click', ()=>{
-  const sel = document.getElementById('m_table');
-  sel.innerHTML='';
-  [...LEFT,...RIGHT,...SNUGS].forEach(t => { const opt=document.createElement('option'); opt.value=t.id; opt.textContent=`${t.id} (${t.seats} seats)`; sel.appendChild(opt); });
-  document.getElementById('m_date').value = document.getElementById('day').value;
-  modal.style.display = 'flex';
-});
-document.getElementById('m_cancel').addEventListener('click', ()=> modal.style.display='none');
-document.getElementById('m_save').addEventListener('click', async ()=>{
-  const b = {
-    name: document.getElementById('m_name').value.trim(),
-    email: document.getElementById('m_email').value.trim(),
-    phone: document.getElementById('m_phone').value.trim(),
-    date: document.getElementById('m_date').value,
-    time: document.getElementById('m_time').value,
-    table: document.getElementById('m_table').value,
-    guests: document.getElementById('m_guests').value || 1,
-    notes: document.getElementById('m_notes').value || '',
-  };
-  b.contact = (b.phone ? b.phone : '') + (b.email ? (' / ' + b.email) : '');
+async function updateStatus(table, status) {
   try {
-    const res = await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'createBooking', booking: b })});
-    const txt = await res.text();
-    if(txt.startsWith('success')) { modal.style.display='none'; await loadDay(); alert('Booking added'); }
-    else alert('Failed: ' + txt);
-  } catch(err){ console.error(err); alert('Save failed'); }
-});
-
-/* toggle close day */
-document.getElementById('toggleClose').addEventListener('click', async ()=>{
-  const day = document.getElementById('day').value;
-  // check closed
-  const r = await fetch(WEBHOOK + '?action=isClosed&date=' + encodeURIComponent(day));
-  const j = await r.json();
-  if(j.closed){
-    // open day
-    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'openDay', date: day })});
-  } else {
-    await fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'closeDay', date: day })});
+    await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "update", table, status }),
+    });
+    alert(`Table ${table} marked as ${status}`);
+    loadBookings();
+  } catch (err) {
+    console.error("Error updating status", err);
   }
-  await loadDay();
-});
-
-/* wired refresh and initial load */
-document.getElementById('refresh').addEventListener('click', loadDay);
-document.getElementById('day').addEventListener('change', loadDay);
-loadDay();
+}
 </script>
 </body>
 </html>
