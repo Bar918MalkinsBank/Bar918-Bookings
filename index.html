@@ -11,29 +11,45 @@
 })();
 </script>
 </head>
-<body style="background:transparent;font-family:Arial;text-align:center;color:#fff;">
+<body style="background:transparent;font-family:Arial,sans-serif;text-align:center;color:#fff;">
 
-<h2>Book a Table at Bar918</h2>
-<p>Select a table, fill in your details, and we'll confirm your booking.</p>
+<h2 style="color:#EAD292;">Book a Table at Bar918</h2>
+<p style="margin-bottom:20px;">Select your table and fill out your booking details.</p>
 
 <!-- Table Layout -->
-<div id="tableLayout" style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:20px;">
-  <button onclick="selectTable(this)" data-table="1" style="width:80px;height:80px;">1<br>4 seats</button>
-  <button onclick="selectTable(this)" data-table="2" style="width:80px;height:80px;">2<br>6 seats</button>
-  <button onclick="selectTable(this)" data-table="3" style="width:80px;height:80px;">3<br>4 seats</button>
-  <button onclick="selectTable(this)" data-table="4" style="width:80px;height:80px;">4<br>4 seats</button>
-  <button onclick="selectTable(this)" data-table="5" style="width:80px;height:80px;">5<br>4 seats</button>
-  <button onclick="selectTable(this)" data-table="6" style="width:80px;height:80px;">6<br>6 seats</button>
-  <button onclick="selectTable(this)" data-table="7" style="width:80px;height:80px;">7<br>6 seats</button>
-  <button onclick="selectTable(this)" data-table="8" style="width:80px;height:80px;">8<br>4 seats</button>
-  <button onclick="selectTable(this)" data-table="S1" style="width:80px;height:80px;">Snug 1<br>2 seats</button>
-  <button onclick="selectTable(this)" data-table="S2" style="width:80px;height:80px;">Snug 2<br>2 seats</button>
-  <button onclick="selectTable(this)" data-table="S3" style="width:80px;height:80px;">Snug 3<br>2 seats</button>
+<div style="display:flex;justify-content:center;align-items:flex-start;gap:40px;margin-bottom:20px;">
+
+  <!-- Left Section -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+    <div style="display:grid;grid-template-columns:repeat(2,90px);gap:12px;">
+      <button onclick="selectTable(this)" data-table="1" style="width:90px;height:60px;">Table 1<br>4 seats</button>
+      <button onclick="selectTable(this)" data-table="2" style="width:90px;height:60px;">Table 2<br>4 seats</button>
+      <button onclick="selectTable(this)" data-table="3" style="width:90px;height:60px;">Table 3<br>4 seats</button>
+      <button onclick="selectTable(this)" data-table="4" style="width:90px;height:60px;">Table 4<br>4 seats</button>
+    </div>
+    <div style="margin-top:15px;display:flex;gap:12px;">
+      <button onclick="selectTable(this)" data-table="S1" style="width:90px;height:50px;">Snug 1<br>2 seats</button>
+      <button onclick="selectTable(this)" data-table="S2" style="width:90px;height:50px;">Snug 2<br>2 seats</button>
+      <button onclick="selectTable(this)" data-table="S3" style="width:90px;height:50px;">Snug 3<br>2 seats</button>
+    </div>
+  </div>
+
+  <!-- Divider -->
+  <div style="width:3px;height:250px;background-color:#5a2d0c;border-radius:3px;"></div>
+
+  <!-- Right Section -->
+  <div style="display:grid;grid-template-columns:repeat(2,90px);gap:12px;">
+    <button onclick="selectTable(this)" data-table="5" style="width:90px;height:60px;">Table 5<br>4 seats</button>
+    <button onclick="selectTable(this)" data-table="6" style="width:90px;height:60px;">Table 6<br>6 seats</button>
+    <button onclick="selectTable(this)" data-table="7" style="width:90px;height:60px;">Table 7<br>6 seats</button>
+    <button onclick="selectTable(this)" data-table="8" style="width:90px;height:60px;">Table 8<br>4 seats</button>
+  </div>
 </div>
 
 <!-- Booking Form -->
 <form id="bookingForm" style="max-width:400px;margin:auto;">
-  <input type="hidden" name="table" id="selectedTable" required>
+  <input type="hidden" id="selectedTable" required>
+
   <label>Date:</label><br>
   <input type="date" id="date" required><br><br>
 
@@ -58,17 +74,22 @@
   <label>Special Requests:</label><br>
   <textarea id="notes" rows="3" style="width:100%;"></textarea><br><br>
 
-  <button type="submit">Book Now</button>
+  <button type="submit" style="background-color:#012C4E;color:#fff;padding:10px 20px;border:none;border-radius:4px;cursor:pointer;">
+    Book Now
+  </button>
 </form>
 
 <p id="statusMessage"></p>
 
 <script>
 const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec";
-
 let selectedButton = null;
+
 function selectTable(btn) {
-  if (selectedButton) selectedButton.style.backgroundColor = '';
+  if (selectedButton) {
+    selectedButton.style.backgroundColor = '';
+    selectedButton.style.color = '#000';
+  }
   btn.style.backgroundColor = '#012C4E';
   btn.style.color = '#fff';
   selectedButton = btn;
@@ -77,16 +98,16 @@ function selectTable(btn) {
 
 document.getElementById("bookingForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const table = document.getElementById("selectedTable").value;
-  const date = document.getElementById("date").value;
-  const time = document.getElementById("time").value;
-  const name = document.getElementById("name").value;
-  const contact = document.getElementById("contact").value;
-  const email = document.getElementById("email").value;
-  const babySeat = document.getElementById("babySeat").value;
-  const notes = document.getElementById("notes").value;
-
-  const data = { table, date, time, name, contact, email, babySeat, notes };
+  const data = {
+    table: document.getElementById("selectedTable").value,
+    date: document.getElementById("date").value,
+    time: document.getElementById("time").value,
+    name: document.getElementById("name").value,
+    contact: document.getElementById("contact").value,
+    email: document.getElementById("email").value,
+    babySeat: document.getElementById("babySeat").value,
+    notes: document.getElementById("notes").value,
+  };
 
   try {
     await fetch(WEBHOOK_URL, {
@@ -95,22 +116,24 @@ document.getElementById("bookingForm").addEventListener("submit", async (e) => {
       body: JSON.stringify(data),
     });
 
+    // Send to customer
     emailjs.send("Service_Reservations", "Table_Template", {
-      to_email: email,
-      to_name: name,
-      table: table,
-      date: date,
-      time: time,
-      contact: contact,
+      to_email: data.email,
+      to_name: data.name,
+      table: data.table,
+      date: data.date,
+      time: data.time,
+      contact: data.contact,
     });
 
+    // Send to bar
     emailjs.send("Service_Reservations", "Table_Template", {
       to_email: "bar918.malkinsbank@gmail.com",
       to_name: "Bar918",
-      table: table,
-      date: date,
-      time: time,
-      contact: contact,
+      table: data.table,
+      date: data.date,
+      time: data.time,
+      contact: data.contact,
     });
 
     document.getElementById("statusMessage").innerText = "Booking submitted successfully!";
