@@ -1,4 +1,3 @@
-/* Transparent background for embedding on Square */
 body {
   background: transparent;
   font-family: 'Poppins', sans-serif;
@@ -6,7 +5,6 @@ body {
   text-align: center;
 }
 
-/* Booking container */
 .booking-container {
   width: 100%;
   display: flex;
@@ -16,19 +14,17 @@ body {
   padding-top: 40px;
 }
 
-/* Divider Line */
 .divider-line {
   position: absolute;
   top: 40px;
   bottom: 200px;
   width: 3px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(139, 69, 19, 0.8);
   left: 50%;
   transform: translateX(-50%);
   z-index: 0;
 }
 
-/* Main Tables */
 .main-tables {
   display: grid;
   grid-template-columns: repeat(2, 100px);
@@ -37,7 +33,6 @@ body {
   margin-bottom: 80px;
 }
 
-/* Snug Tables */
 .snug-wrapper {
   display: flex;
   justify-content: center;
@@ -46,7 +41,6 @@ body {
   margin-top: 20px;
 }
 
-/* Table Buttons */
 .table-btn {
   width: 100px;
   height: 100px;
@@ -61,33 +55,29 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  position: relative;
   z-index: 1;
 }
 
 .table-btn span {
   font-size: 0.8rem;
-  color: #ccc;
+  color: #EAD292;
 }
 
-/* Hover + Selected */
 .table-btn:hover {
   background: #004c7a;
   transform: scale(1.05);
 }
 
 .table-btn.selected {
-  border: 3px solid #FFD700;
+  border: 3px solid #EAD292;
   background: #01355f;
 }
 
-/* Snug Tables smaller */
 .snug {
   width: 150px;
   height: 60px;
 }
 
-/* Legend styling */
 .legend {
   display: flex;
   justify-content: center;
@@ -106,14 +96,6 @@ body {
   vertical-align: middle;
 }
 
-.available {
-  background: #2ecc71;
-}
-
-.booked {
-  background: #e74c3c;
-}
-
-.pending {
-  background: #f1c40f;
-}
+.available { background: #2ecc71; }
+.booked { background: #e74c3c; }
+.pending { background: #f1c40f; }
