@@ -1,189 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bar 918 Table Booking</title>
-
-<!-- Table Button Styles -->
-<link rel="stylesheet" href=".table-btn.css">
-
-<style>
-/* PAGE STYLES */
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  color: white;
-  text-align: center;
-}
-
-h2 {
-  color: white;
-  font-size: 24px;
-  margin-top: 10px;
-}
-
-.container {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin-top: 20px;
-}
-
-/* LEFT + RIGHT SIDE SPLIT */
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* SNUG TABLES */
-.snug-row {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-/* FORM */
-form {
-  margin-top: 25px;
-  padding: 20px;
-  background: rgba(0,0,0,0.3);
-  border-radius: 12px;
-  width: 300px;
-  display: inline-block;
-}
-
-input, select, textarea, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  border-radius: 6px;
-  border: none;
-  box-sizing: border-box;
-}
-
-button {
-  background: #012C4E;
-  color: white;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #014a8a;
-}
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
-<script>
-(function(){
-  emailjs.init("aypCqsVVHRqzqReCk");
-})();
-</script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bar 918 Table Booking</title>
+  <link rel="stylesheet" href="table-btn.css">
 </head>
 <body>
 
-<h2>Choose a Table</h2>
+  <div class="booking-container">
 
-<div class="container">
+    <!-- Divider -->
+    <div class="divider-line"></div>
 
-  <!-- LEFT SIDE -->
-  <div class="section">
-    <button class="table-btn" data-table="1"><span>1</span></button>
-    <button class="table-btn" data-table="2"><span>2</span></button>
-    <button class="table-btn" data-table="3"><span>3</span></button>
-    <button class="table-btn" data-table="4"><span>4</span></button>
+    <!-- Main Table Layout -->
+    <div class="main-tables">
+      <button class="table-btn" data-table="1">1<br><span>4 seats</span></button>
+      <button class="table-btn" data-table="2">2<br><span>4 seats</span></button>
+      <button class="table-btn" data-table="3">3<br><span>4 seats</span></button>
+      <button class="table-btn" data-table="4">4<br><span>4 seats</span></button>
+      <button class="table-btn" data-table="5">5<br><span>4 seats</span></button>
+      <button class="table-btn" data-table="6">6<br><span>6 seats</span></button>
+      <button class="table-btn" data-table="7">7<br><span>6 seats</span></button>
+      <button class="table-btn" data-table="8">8<br><span>4 seats</span></button>
+    </div>
+
+    <!-- Snug Tables -->
+    <div class="snug-wrapper">
+      <button class="table-btn snug" data-table="S1">Snug 1<br><span>2 seats</span></button>
+      <button class="table-btn snug" data-table="S2">Snug 2<br><span>2 seats</span></button>
+      <button class="table-btn snug" data-table="S3">Snug 3<br><span>2 seats</span></button>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div><span class="legend-box available"></span> Available</div>
+      <div><span class="legend-box booked"></span> Booked</div>
+      <div><span class="legend-box pending"></span> Pending</div>
+    </div>
+
   </div>
 
-  <!-- DIVIDER -->
-  <div style="width:4px; background:#4b2e13; border-radius:2px;"></div>
-
-  <!-- RIGHT SIDE -->
-  <div class="section">
-    <button class="table-btn" data-table="5"><span>5</span></button>
-    <button class="table-btn" data-table="6"><span>6</span></button>
-    <button class="table-btn" data-table="7"><span>7</span></button>
-    <button class="table-btn" data-table="8"><span>8</span></button>
-  </div>
-
-</div>
-
-<!-- 🟦 SNUG TABLES BELOW LEFT SIDE -->
-<div class="snug-row">
-  <button class="table-btn" data-table="S1"><span>S1</span></button>
-  <button class="table-btn" data-table="S2"><span>S2</span></button>
-</div>
-
-<!-- FORM -->
-<form id="bookingForm">
-  <h3>Enter Booking Details</h3>
-  
-  <input type="text" id="name" placeholder="Your Name" required>
-  <input type="date" id="date" required>
-  <input type="time" id="time" required>
-  <input type="tel" id="contact" placeholder="Phone / Email" required>
-  <select id="guests" required>
-    <option value="">Guests</option>
-    <option value="2">2 Guests</option>
-    <option value="3">3 Guests</option>
-    <option value="4">4 Guests</option>
-    <option value="5">5 Guests</option>
-    <option value="6">6 Guests</option>
-  </select>
-  <textarea id="notes" rows="3" placeholder="Special Requests (Optional)"></textarea>
-  <button type="submit">Book Table</button>
-</form>
-
-<script>
-// ✅ Table Selection
-let selectedTable = null;
-document.querySelectorAll(".table-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    if (btn.classList.contains("unavailable")) return;
-    document.querySelectorAll(".table-btn").forEach(b => b.classList.remove("selected"));
-    btn.classList.add("selected");
-    selectedTable = btn.dataset.table;
-  });
-});
-
-// ✅ Form Submission
-document.getElementById("bookingForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  if (!selectedTable) return alert("Please select a table!");
-
-  const bookingData = {
-    timestamp: new Date().toISOString(),
-    name: document.getElementById("name").value,
-    date: document.getElementById("date").value,
-    time: document.getElementById("time").value,
-    table: selectedTable,
-    guests: document.getElementById("guests").value,
-    contact: document.getElementById("contact").value,
-    notes: document.getElementById("notes").value,
-    status: "Booked"
-  };
-
-  fetch("https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(bookingData)
-  }).then(() => {
-    alert("Booking Successful!");
-  }).catch(() => {
-    alert("Error sending booking!");
-  });
-
-  emailjs.send("Service_Reservations", "Table_Template", bookingData);
-
-  e.target.reset();
-  selectedTable = null;
-});
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
-
