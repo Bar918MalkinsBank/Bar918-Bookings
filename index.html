@@ -1,145 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bar918 Table Booking</title>
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-<script>
-(function(){
-  emailjs.init("aypCqsVVHRqzqReCk");
-})();
-</script>
-</head>
-<body style="background:transparent;font-family:Arial,sans-serif;text-align:center;color:#fff;">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bar918 — Book a table</title>
 
-<h2 style="color:#EAD292;">Book a Table at Bar918</h2>
-<p style="margin-bottom:20px;">Select your table and fill out your booking details.</p>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('aypCqsVVHRqzqReCk');</script>
 
-<!-- Table Layout -->
-<div style="display:flex;justify-content:center;align-items:flex-start;gap:40px;margin-bottom:20px;">
-
-  <!-- Left Section -->
-  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-    <div style="display:grid;grid-template-columns:repeat(2,90px);gap:12px;">
-      <button onclick="selectTable(this)" data-table="1" style="width:90px;height:60px;">Table 1<br>4 seats</button>
-      <button onclick="selectTable(this)" data-table="2" style="width:90px;height:60px;">Table 2<br>4 seats</button>
-      <button onclick="selectTable(this)" data-table="3" style="width:90px;height:60px;">Table 3<br>4 seats</button>
-      <button onclick="selectTable(this)" data-table="4" style="width:90px;height:60px;">Table 4<br>4 seats</button>
-    </div>
-    <div style="margin-top:15px;display:flex;gap:12px;">
-      <button onclick="selectTable(this)" data-table="S1" style="width:90px;height:50px;">Snug 1<br>2 seats</button>
-      <button onclick="selectTable(this)" data-table="S2" style="width:90px;height:50px;">Snug 2<br>2 seats</button>
-      <button onclick="selectTable(this)" data-table="S3" style="width:90px;height:50px;">Snug 3<br>2 seats</button>
-    </div>
-  </div>
-
-  <!-- Divider -->
-  <div style="width:3px;height:250px;background-color:#5a2d0c;border-radius:3px;"></div>
-
-  <!-- Right Section -->
-  <div style="display:grid;grid-template-columns:repeat(2,90px);gap:12px;">
-    <button onclick="selectTable(this)" data-table="5" style="width:90px;height:60px;">Table 5<br>4 seats</button>
-    <button onclick="selectTable(this)" data-table="6" style="width:90px;height:60px;">Table 6<br>6 seats</button>
-    <button onclick="selectTable(this)" data-table="7" style="width:90px;height:60px;">Table 7<br>6 seats</button>
-    <button onclick="selectTable(this)" data-table="8" style="width:90px;height:60px;">Table 8<br>4 seats</button>
-  </div>
-</div>
-
-<!-- Booking Form -->
-<form id="bookingForm" style="max-width:400px;margin:auto;">
-  <input type="hidden" id="selectedTable" required>
-
-  <label>Date:</label><br>
-  <input type="date" id="date" required><br><br>
-
-  <label>Time:</label><br>
-  <input type="time" id="time" required><br><br>
-
-  <label>Name:</label><br>
-  <input type="text" id="name" required><br><br>
-
-  <label>Contact Number:</label><br>
-  <input type="tel" id="contact" required><br><br>
-
-  <label>Email:</label><br>
-  <input type="email" id="email" required><br><br>
-
-  <label>Baby Seat?</label><br>
-  <select id="babySeat" required>
-    <option value="No">No</option>
-    <option value="Yes">Yes</option>
-  </select><br><br>
-
-  <label>Special Requests:</label><br>
-  <textarea id="notes" rows="3" style="width:100%;"></textarea><br><br>
-
-  <button type="submit" style="background-color:#012C4E;color:#fff;padding:10px 20px;border:none;border-radius:4px;cursor:pointer;">
-    Book Now
-  </button>
-</form>
-
-<p id="statusMessage"></p>
-
-<script>
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec";
-let selectedButton = null;
-
-function selectTable(btn) {
-  if (selectedButton) {
-    selectedButton.style.backgroundColor = '';
-    selectedButton.style.color = '#000';
+<style>
+  :root{--blue:#012C4E;--gold:#EAD292;--mah:#4B2E05}
+  body{
+    font-family:Inter,system-ui,Arial;
+    background:transparent;
+    margin:0;
+    color:var(--blue);
+    -webkit-font-smoothing:antialiased
   }
-  btn.style.backgroundColor = '#012C4E';
-  btn.style.color = '#fff';
-  selectedButton = btn;
-  document.getElementById("selectedTable").value = btn.dataset.table;
-}
+  /* 🔹 changed this line below: removed opaque white background */
+  .wrap{
+    max-width:920px;
+    margin:18px auto;
+    padding:18px;
+    background:transparent; /* was rgba(255,255,255,0.65) */
+    border-radius:14px;
+  }
+  h1{margin:0 0 10px;font-size:1.6rem;color:var(--blue)}
+  .layout{display:flex;gap:28px;align-items:start;position:relative;flex-wrap:wrap}
+  .divider{position:absolute;left:50%;transform:translateX(-50%);top:20px;bottom:20px;width:6px;background:#4B2E05;border-radius:3px}
+  .section{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:8px}
+  .snug{display:flex;gap:14px;justify-content:flex-start;padding-left:6px;margin-top:14px}
+  .table{background:var(--gold);border-radius:10px;padding:12px 6px;text-align:center;font-weight:800;cursor:pointer;transition:transform .12s,box-shadow .12s,border .12s;border:2px solid transparent}
+  .table:hover{transform:translateY(-4px);box-shadow:0 8px 18px rgba(2,6,23,0.06)}
+  .table small{display:block;font-weight:600;font-size:.85rem;margin-top:6px}
+  .table.selected{background:var(--blue);color:var(--gold);border-color:var(--gold)}
+  .table.booked{background:#bdbdbd;color:#333;cursor:not-allowed}
+  form{margin-top:18px;display:grid;gap:10px}
+  label{font-weight:700;font-size:.9rem}
+  input,select,textarea,button{padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);font-size:15px}
+  input[type=date],input[type=time]{background:white}
+  button{background:var(--blue);color:var(--gold);font-weight:800;border:0;cursor:pointer}
+  @media(max-width:900px){.section{grid-template-columns:repeat(2,1fr)}.divider{display:none}.snug{justify-content:center}}
+</style>
+</head>
+<body>
+  <div class="wrap" aria-live="polite">
+    <h1>Bar918 — Book a table</h1>
 
-document.getElementById("bookingForm").addEventListener("submit", async (e) => {
+    <div class="layout" role="region" aria-label="Table layout">
+      <div class="section" id="leftSection"></div>
+      <div class="divider" aria-hidden="true"></div>
+      <div class="section" id="rightSection"></div>
+    </div>
+
+    <div class="snug" id="snugSection"></div>
+
+    <form id="bookingForm" autocomplete="off" novalidate>
+      <label for="name">Full name</label>
+      <input id="name" name="name" type="text" required>
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required>
+
+      <label for="phone">Phone</label>
+      <input id="phone" name="phone" type="tel" required>
+
+      <label for="date">Date</label>
+      <input id="date" name="date" type="date" required>
+
+      <label for="time">Time</label>
+      <input id="time" name="time" type="time" min="10:00" max="20:00" required>
+
+      <label for="guests">Guests</label>
+      <select id="guests" name="guests" required>
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+        <option value="4" selected>4</option><option value="5">5</option><option value="6">6</option>
+      </select>
+
+      <label for="babySeat">Baby seat?</label>
+      <select id="babySeat" name="babySeat">
+        <option>No</option><option>Yes</option>
+      </select>
+
+      <label for="notes">Special requests</label>
+      <textarea id="notes" name="notes" rows="3" placeholder="Allergies, celebrations..."></textarea>
+
+      <input id="table" name="table" type="hidden" required>
+
+      <button id="submitBtn" type="submit">Confirm booking</button>
+    </form>
+  </div>
+
+<script>
+/* CONFIG */
+const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec';
+const EMAILJS_SERVICE = 'Service_Reservations';
+const EMAILJS_TEMPLATE = 'Table_Template';
+const STAFF_EMAIL = 'bar918.malkinsbank@gmail.com';
+
+/* Table definitions */
+const LEFT = [
+  {id:7,seats:4},{id:8,seats:4},{id:9,seats:4},
+  {id:10,seats:4},{id:11,seats:4},{id:12,seats:4},
+  {id:13,seats:4},{id:14,seats:6},{id:15,seats:4}
+];
+const RIGHT = [
+  {id:1,seats:4},{id:2,seats:6},{id:3,seats:4},
+  {id:4,seats:4},{id:5,seats:4},{id:6,seats:6}
+];
+const SNUGS = [{id:'S1',seats:2},{id:'S2',seats:2},{id:'S3',seats:2}];
+
+/* Build UI */
+function makeCard(t){
+  const d = document.createElement('button');
+  d.type='button';
+  d.className='table';
+  d.dataset.id = t.id;
+  d.dataset.seats = t.seats;
+  d.innerHTML = `${typeof t.id === 'string' ? t.id : 'Table ' + t.id}<small>${t.seats} seats</small>`;
+  d.addEventListener('click', () => {
+    if(d.classList.contains('booked')) return;
+    document.querySelectorAll('.table').forEach(x=>x.classList.remove('selected'));
+    d.classList.add('selected');
+    document.getElementById('table').value = t.id;
+    const guestsEl = document.getElementById('guests');
+    if(!guestsEl.dataset.touched) guestsEl.value = t.seats;
+  });
+  return d;
+}
+function renderLayout(){
+  const left = document.getElementById('leftSection'), right = document.getElementById('rightSection'), snug = document.getElementById('snugSection');
+  left.innerHTML=''; right.innerHTML=''; snug.innerHTML='';
+  LEFT.forEach(t=>left.appendChild(makeCard(t)));
+  RIGHT.forEach(t=>right.appendChild(makeCard(t)));
+  SNUGS.forEach(t=>snug.appendChild(makeCard(t)));
+}
+renderLayout();
+
+document.getElementById('guests').addEventListener('change', ()=>document.getElementById('guests').dataset.touched = '1');
+
+function toast(msg){ alert(msg); }
+
+document.getElementById('bookingForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const data = {
-    table: document.getElementById("selectedTable").value,
-    date: document.getElementById("date").value,
-    time: document.getElementById("time").value,
-    name: document.getElementById("name").value,
-    contact: document.getElementById("contact").value,
-    email: document.getElementById("email").value,
-    babySeat: document.getElementById("babySeat").value,
-    notes: document.getElementById("notes").value,
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const date = document.getElementById('date').value;
+  const time = document.getElementById('time').value;
+  const table = document.getElementById('table').value;
+  const guests = document.getElementById('guests').value;
+  const babySeat = document.getElementById('babySeat').value;
+  const notes = document.getElementById('notes').value.trim();
+  if(!table){ return toast('Please select a table'); }
+
+  const booking = {
+    name, email, phone, date, time, table, guests,
+    contact: (phone ? phone : '') + (email ? (' / ' + email) : ''),
+    notes: `Baby seat: ${babySeat}${notes ? ' — ' + notes : ''}`
   };
 
   try {
-    await fetch(WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(data),
+    const resp = await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action: 'createBooking', booking })
     });
+    const txt = await resp.text();
 
-    // Send to customer
-    emailjs.send("Service_Reservations", "Table_Template", {
-      to_email: data.email,
-      to_name: data.name,
-      table: data.table,
-      date: data.date,
-      time: data.time,
-      contact: data.contact,
-    });
+    if(txt && txt.startsWith('rejected')){
+      toast('Sorry — booking unavailable (' + txt.split(':')[1] + ').');
+      return;
+    }
+    if(txt && txt.startsWith('success')){
+      const paramsCustomer = { ...booking, to_email: booking.email };
+      await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, paramsCustomer);
 
-    // Send to bar
-    emailjs.send("Service_Reservations", "Table_Template", {
-      to_email: "bar918.malkinsbank@gmail.com",
-      to_name: "Bar918",
-      table: data.table,
-      date: data.date,
-      time: data.time,
-      contact: data.contact,
-    });
+      const paramsStaff = { ...booking, to_email: STAFF_EMAIL };
+      await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, paramsStaff);
 
-    document.getElementById("statusMessage").innerText = "Booking submitted successfully!";
+      toast('Booking confirmed — confirmation email sent.');
+      e.target.reset();
+      document.querySelectorAll('.table').forEach(t=>t.classList.remove('selected'));
+      document.getElementById('table').value = '';
+      return;
+    }
+    toast('Unexpected server response: ' + txt);
   } catch (err) {
-    document.getElementById("statusMessage").innerText = "Error submitting booking.";
     console.error(err);
+    toast('Network error while saving booking — try again.');
   }
 });
 </script>
