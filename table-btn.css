@@ -1,37 +1,119 @@
-.table-btn {
-  width: 100px;
-  height: 70px;
-  background: rgba(0,0,0,0.05);
-  border: 2px solid #b38f00;
-  color: #b38f00;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: 0.2s ease-in-out;
-  position: relative;
+/* Transparent background for embedding on Square */
+body {
+  background: transparent;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  text-align: center;
 }
 
+/* Booking container */
+.booking-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding-top: 40px;
+}
+
+/* Divider Line */
+.divider-line {
+  position: absolute;
+  top: 40px;
+  bottom: 200px;
+  width: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+/* Main Tables */
+.main-tables {
+  display: grid;
+  grid-template-columns: repeat(2, 100px);
+  grid-gap: 40px 120px;
+  justify-content: center;
+  margin-bottom: 80px;
+}
+
+/* Snug Tables */
+.snug-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* Table Buttons */
+.table-btn {
+  width: 100px;
+  height: 100px;
+  border-radius: 16px;
+  border: 2px solid #012C4E;
+  background: rgba(1, 44, 78, 0.9);
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.table-btn span {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+/* Hover + Selected */
 .table-btn:hover {
+  background: #004c7a;
   transform: scale(1.05);
-  background: rgba(179, 143, 0, 0.15);
 }
 
 .table-btn.selected {
-  border: 3px solid #00aa44;
-  box-shadow: 0 0 8px #00aa44;
-  background: rgba(0,170,68,0.25);
+  border: 3px solid #FFD700;
+  background: #01355f;
 }
 
-.table-btn.unavailable {
-  background: rgba(255,0,0,0.25);
-  border-color: red;
-  cursor: not-allowed;
+/* Snug Tables smaller */
+.snug {
+  width: 150px;
+  height: 60px;
 }
 
-.table-btn.unavailable:hover {
-  transform: none;
+/* Legend styling */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 60px;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.legend-box {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.available {
+  background: #2ecc71;
+}
+
+.booked {
+  background: #e74c3c;
+}
+
+.pending {
+  background: #f1c40f;
 }
