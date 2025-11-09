@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bar918 — Employee Portal</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <h1>Bar918 — Employee Portal</h1>
+
+    <div class="control-bar">
+      <button id="prevDay" title="Previous day">←</button>
+      <input id="dateSelector" type="date">
+      <button id="nextDay" title="Next day">→</button>
+
+      <label class="control-inline"><input type="checkbox" id="blockDateToggle"> Block Date</label>
+      <label class="control-inline"><input type="checkbox" id="closeBookingsToggle"> Close All Bookings</label>
+
+      <div style="margin-left:auto">
+        <button id="refreshBtn">Refresh</button>
+        <button id="addBookingBtn">+ New Booking</button>
+      </div>
+    </div>
+
+    <div class="legend" id="legendBar">
+      <span class="legend-item booked">Booked</span>
+      <span class="legend-item seated">Seated</span>
+      <span class="legend-item finished">Finished</span>
+      <span class="legend-item closed">Closed</span>
+      <span class="legend-item blocked">Blocked</span>
+    </div>
+
+    <div id="bookingsTableContainer" class="bookings-table-container">
+      <table class="bookings-table" id="bookingsTable">
+        <thead>
+          <tr><th>Timestamp</th><th>Name</th><th>Date</th><th>Time</th><th>Table</th><th>Guests</th><th>Contact</th><th>Notes</th><th>Status</th></tr>
+        </thead>
+        <tbody id="bookingsTbody"><tr><td colspan="9">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="table-layout" role="region" aria-label="Table layout">
+      <div class="section" id="leftFloor"></div>
+      <div class="divider" aria-hidden="true"></div>
+      <div class="section" id="rightFloor"></div>
+    </div>
+
+    <div class="snug" id="snugFloor"></div>
+  </div>
+
+  <!-- Modal for new booking -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="panel">
+      <h3>Add booking</h3>
+      <div class="form-grid">
+        <input id="m_name" placeholder="Name">
+        <input id="m_email" placeholder="Email">
+        <input id="m_phone" placeholder="Phone">
+        <select id="m_table"></select>
+        <input id="m_date" type="date">
+        <input id="m_time" type="time">
+        <input id="m_guests" type="number" min="1" max="12" placeholder="Guests">
+        <select id="m_baby"><option>No</option><option>Yes</option></select>
+      </div>
+      <textarea id="m_notes" placeholder="Notes"></textarea>
+      <div style="text-align:right;margin-top:10px">
+        <button id="m_cancel">Cancel</button>
+        <button id="m_save">Save</button>
+      </div>
+    </div>
+  </div>
+
+<script src="employee.js"></script>
+</body>
+</html>
