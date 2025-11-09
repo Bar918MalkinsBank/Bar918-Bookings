@@ -1,91 +1,76 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Employee Portal - Bar918</title>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bar918 — Employee Portal</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body style="background:transparent;font-family:Arial;text-align:center;color:#fff;">
-<h2>Bar918 Employee Portal</h2>
-<p>View bookings, mark as seated/finished, and close off tables.</p>
+<body>
+  <div class="wrap">
+    <h1>Bar918 — Employee Portal</h1>
 
-<div>
-  <label>Select Date: </label>
-  <input type="date" id="dateSelect" />
-  <button onclick="loadBookings()">Load Bookings</button>
-</div>
+    <div class="control-bar">
+      <button id="prevDay" title="Previous day">←</button>
+      <input id="dateSelector" type="date">
+      <button id="nextDay" title="Next day">→</button>
 
-<table border="1" style="margin:auto;margin-top:20px;width:90%;border-collapse:collapse;color:#fff;">
-  <thead>
-    <tr>
-      <th>Table</th>
-      <th>Name</th>
-      <th>Date</th>
-      <th>Time</th>
-      <th>Contact</th>
-      <th>Notes</th>
-      <th>Status</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody id="bookingList"></tbody>
-</table>
+      <label class="control-inline"><input type="checkbox" id="blockDateToggle"> Block Date</label>
+      <label class="control-inline"><input type="checkbox" id="closeBookingsToggle"> Close All Bookings</label>
 
-<script>
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxALplsL1YhvjozZcJrd68-wZ_J8lG0IavP-B9xY26LD8ug7KnTAF5_gOcC3S5Ktp5S/exec";
+      <div style="margin-left:auto">
+        <button id="refreshBtn">Refresh</button>
+        <button id="addBookingBtn">+ New Booking</button>
+      </div>
+    </div>
 
-async function loadBookings() {
-  const date = document.getElementById("dateSelect").value;
-  const tbody = document.getElementById("bookingList");
-  tbody.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
+    <div class="legend" id="legendBar">
+      <span class="legend-item booked">Booked</span>
+      <span class="legend-item seated">Seated</span>
+      <span class="legend-item finished">Finished</span>
+      <span class="legend-item closed">Closed</span>
+      <span class="legend-item blocked">Blocked</span>
+    </div>
 
-  try {
-    const response = await fetch(WEBHOOK_URL);
-    const data = await response.json();
-    const filtered = data.filter(row => row.Date === date);
+    <div id="bookingsTableContainer" class="bookings-table-container">
+      <table class="bookings-table" id="bookingsTable">
+        <thead>
+          <tr><th>Timestamp</th><th>Name</th><th>Date</th><th>Time</th><th>Table</th><th>Guests</th><th>Contact</th><th>Notes</th><th>Status</th></tr>
+        </thead>
+        <tbody id="bookingsTbody"><tr><td colspan="9">Loading…</td></tr></tbody>
+      </table>
+    </div>
 
-    tbody.innerHTML = "";
-    if (filtered.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='8'>No bookings for this date.</td></tr>";
-      return;
-    }
+    <div class="table-layout" role="region" aria-label="Table layout">
+      <div class="section" id="leftFloor"></div>
+      <div class="divider" aria-hidden="true"></div>
+      <div class="section" id="rightFloor"></div>
+    </div>
 
-    filtered.forEach(row => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${row.Table}</td>
-        <td>${row.Name}</td>
-        <td>${row.Date}</td>
-        <td>${row.Time}</td>
-        <td>${row.Contact}</td>
-        <td>${row.Notes || ''}</td>
-        <td>${row.Status}</td>
-        <td>
-          <button onclick="updateStatus('${row.Table}','Seated')">Seated</button>
-          <button onclick="updateStatus('${row.Table}','Finished')">Finished</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    console.error(err);
-    tbody.innerHTML = "<tr><td colspan='8'>Error loading bookings.</td></tr>";
-  }
-}
+    <div class="snug" id="snugFloor"></div>
+  </div>
 
-async function updateStatus(table, status) {
-  try {
-    await fetch(WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "update", table, status }),
-    });
-    alert(`Table ${table} marked as ${status}`);
-    loadBookings();
-  } catch (err) {
-    console.error("Error updating status", err);
-  }
-}
-</script>
+  <!-- Modal for new booking -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="panel">
+      <h3>Add booking</h3>
+      <div class="form-grid">
+        <input id="m_name" placeholder="Name">
+        <input id="m_email" placeholder="Email">
+        <input id="m_phone" placeholder="Phone">
+        <select id="m_table"></select>
+        <input id="m_date" type="date">
+        <input id="m_time" type="time">
+        <input id="m_guests" type="number" min="1" max="12" placeholder="Guests">
+        <select id="m_baby"><option>No</option><option>Yes</option></select>
+      </div>
+      <textarea id="m_notes" placeholder="Notes"></textarea>
+      <div style="text-align:right;margin-top:10px">
+        <button id="m_cancel">Cancel</button>
+        <button id="m_save">Save</button>
+      </div>
+    </div>
+  </div>
+
+<script src="employee.js"></script>
 </body>
 </html>
